@@ -127,10 +127,10 @@ getgenv().ConfigsKaitun = {
 			"Anti Bee Egg",
 			"Night Egg",
 			"Bug Egg",
+			"Mythical Egg",
 			"Paradise Egg",
 			"Bee Egg",
 			"Rare Summer Egg",
-			"Mythical Egg",
 			"Common Summer Egg",
 		},
 		Buy = {
