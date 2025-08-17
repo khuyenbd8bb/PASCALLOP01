@@ -224,6 +224,7 @@ getgenv().ConfigsKaitun = {
 				"Idk"
 			},
 			Pets = {
+				"Spriggan",
 				"Golden Goose",
 				"Lobster Thermidor",
 				"French Fry Ferret",
