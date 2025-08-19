@@ -70,7 +70,7 @@ getgenv().ConfigsKaitun = {
 		["Bean Event"] = {
 			Minimum_Money = 10_000_000, -- minimum money to start play this event
 		},
-		MaxMoney_Restocks = 500_000_000,
+		MaxMoney_Restocks = 20_000_000_000,
 		["Cook Event"] = {
 			Minimum_Money = 10_000_000, -- minimum money to start play this event
 			Rewards_Item = { -- The top is the most top mean prefered.
