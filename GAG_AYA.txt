@@ -186,7 +186,6 @@ getgenv().ConfigsKaitun = {
 			"Kitsune",
 			"Dilophosaurus",
 			"Moon Cat",
-			"Capybara",
 			"Spinosaurus",
 			"Bear Bee",
 			"T-Rex",
