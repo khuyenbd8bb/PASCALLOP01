@@ -142,7 +142,6 @@ getgenv().ConfigsKaitun = {
 			"Common Summer Egg",
 		},
 		Buy = {
-			"Lemon Lion",
 			"Sprout Egg",
 			"Bee Egg",
 			"Oasis Egg",
@@ -173,6 +172,7 @@ getgenv().ConfigsKaitun = {
 		Favorite_LockedPet = true,
 		Locked_Pet_Age = 60, -- pet that age > 60 will lock
 		Locked = {
+			"Lemon Lion",
 			"Griffin",
 			"Spriggan",
 			"Golden Goose",
@@ -225,6 +225,7 @@ getgenv().ConfigsKaitun = {
 				"Idk"
 			},
 			Pets = {
+				"Griffin",
 				"Spriggan",
 				"Golden Goose",
 				"Lobster Thermidor",
