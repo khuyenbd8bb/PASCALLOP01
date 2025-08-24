@@ -205,6 +205,7 @@ getgenv().ConfigsKaitun = {
 			"Mimic Octopus",
 			"Red Fox",
 			"Blood Owl",
+			"Chicken Zombie",
 			["Starfish"] = 10,
 			["Seal"] = 8,
 		},
