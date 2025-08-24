@@ -87,6 +87,8 @@ getgenv().ConfigsKaitun = {
 		},
 		Craft = {
 			"Anti Bee Egg",
+			"Skyroot Chest",
+			"Pet Shard GianBbean",
 		},
 		Shop = {
 			"Sprout Egg",
@@ -101,6 +103,8 @@ getgenv().ConfigsKaitun = {
 			"Raiju",
 			"Sprout Seed Pack",
 			"Spriggan",
+			"Skyroot Chest",
+			"Pet Shard GianBbean",
 		},
 		Start_Do_Honey = 2_000_000 -- start trade fruit for honey at money
 	},
