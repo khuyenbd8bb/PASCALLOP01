@@ -178,6 +178,7 @@ local function clickButton(button)
 	VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
 	task.wait(0.05)
 	VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 0)
+	findData()
 end
 local function loopAutoBuy()
 	while(ok) do
