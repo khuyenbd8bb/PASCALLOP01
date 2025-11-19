@@ -833,6 +833,38 @@ end
             end
         end)
 
+        function Parent(GUI)
+            if syn and syn.protect_gui then
+                syn.protect_gui(GUI)
+                GUI.Parent = game:GetService("CoreGui")
+            elseif PROTOSMASHER_LOADED then
+                GUI.Parent = get_hidden_gui()
+            else
+                GUI.Parent = game:GetService("CoreGui")
+            end
+        end
+
+        local ScreenGui = Instance.new("ScreenGui")
+        Parent(ScreenGui)
+
+        local CopyScriptPath = Instance.new("TextButton")
+        CopyScriptPath.Name = ""
+        CopyScriptPath.Parent = ScreenGui -- ⭐ MUST be parented to something visible
+        CopyScriptPath.BackgroundColor3 = Color3.new(0.000000, 0.000000, 0.000000)
+        CopyScriptPath.Position = UDim2.new(0.5, -25, 0, 20)
+        CopyScriptPath.Size = UDim2.new(0, 50, 0, 50)
+        CopyScriptPath.ZIndex = 15
+        CopyScriptPath.Font = Enum.Font.SourceSans
+        CopyScriptPath.Text = ""
+        CopyScriptPath.TextColor3 = Color3.fromRGB(250, 251, 255)
+        CopyScriptPath.TextSize = 16
+        CopyScriptPath.BorderSizePixel = 2
+        CopyScriptPath.BorderColor3 = Color3.new(1.000000, 1.000000, 1.000000)
+
+        CopyScriptPath.MouseButton1Click:Connect(function()
+            Window:Minimize()
+        end)
+
         SaveManager:SetLibrary(Fluent)
         InterfaceManager:SetLibrary(Fluent)
 
@@ -859,6 +891,7 @@ end
         -- which has been marked to be one that auto loads!
         SaveManager:LoadAutoloadConfig()
         tabs.Settings:AddSection("Only work with lastest config")
+
     end
 end
 
