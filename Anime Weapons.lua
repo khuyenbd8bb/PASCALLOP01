@@ -49,13 +49,30 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-warn("???")
 task.spawn(function()
-	while true do
-		warn(inDungeon, isDungeon)
-		task.wait(10)
-	end
+    while true do 
+        local args = {
+            "Settings",
+            {
+                "AutoAttack",
+                true
+            }
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+        task.wait(1)
+    end
 end)
+task.spawn(function()
+    while true do
+        attackRangePart =  workspace:FindFirstChild("AttackRange")
+        if not attackRangePart then return end
+        if attackRangePart then attackRangePart = attackRangePart.Part end
+        attackRange = attackRangePart.Size.X/2
+        task.wait(1)
+    end
+end)
+
+
 task.spawn(function()
     while true do
         task.wait()
@@ -116,12 +133,7 @@ local function loadData()
 
 end
 
-task.spawn(function()
-   attackRangePart =  workspace:FindFirstChild("AttackRange")
-   if not attackRangePart then return end
-   if attackRangePart then attackRangePart = attackRangePart.Part end
-   attackRange = attackRangePart.Size.X/2
-end)
+
 
 local function FindHRP(player)
     for _, zone in ipairs(workspace.Zones:GetChildren()) do
@@ -168,22 +180,6 @@ waveGui:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
-attackRangePart:GetPropertyChangedSignal("Size"):Connect(function()
-    attackRange = attackRangePart.Size.X/2
-end)
-task.spawn(function()
-    while true do 
-        local args = {
-            "Settings",
-            {
-                "AutoAttack",
-                true
-            }
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        task.wait(1)
-    end
-end)
 
 local function getDistance(obj1, obj2)
     local pos1, pos2
@@ -337,7 +333,6 @@ local function teleportBack()
         }
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-	warn("TELEPORT BACK")
 end
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
@@ -376,7 +371,6 @@ local function killDungeon(monster)
         if getDistance(attackRangePart, monster) > distance then 
             return
         end
-		warn(checkFolderRaidZones(), wave, targetWave)
         if checkFolderRaidZones() and wave > targetWave then 
             inDungeon = false
             teleportBack()
@@ -398,7 +392,6 @@ local function checkDungeon()
     end
     
     while room <= targetRoom and inDungeon and isDungeon do 
-        warn(checkFolderRaidZones(), wave, targetWave, 2)
         local monsters = workspace.Enemies:GetChildren()
         if (#monsters == 0) then 
             if not checkFolderDungeonZones() and not checkFolderRaidZones() then inDungeon = false end
@@ -409,6 +402,7 @@ local function checkDungeon()
             if not isDungeon then return end
             if not inDungeon then return end
             if wave > targetWave and checkFolderRaidZones() then 
+                inDungeon = false
                 teleportBack()
                 return
             end
@@ -444,7 +438,9 @@ local function joinDungeon()
         while checkFolderRaidZones() do
             task.wait()
         end
-        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then teleportBack() end
+        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
+            teleportBack() 
+        end
         return 
     end
     
@@ -494,12 +490,16 @@ local function joinDungeon()
         while checkFolderRaidZones() do
             task.wait()
         end
-        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then teleportBack() end
+        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
+            teleportBack()
+        end
     end
     
 end
 local function autoFarmDungeon()
     while (isDungeon) do
+        wave = 0
+        room = 0
         joinDungeon()
         task.wait(1)    
     end
