@@ -242,7 +242,7 @@ end
 local function kill(monster)
     local head = monster:FindFirstChild("Head")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = -2
+    local safeHeight = 0
     --local alive = head.Transparency
     if inDungeon then return end 
     local headPos = getPosition(head)
@@ -301,7 +301,10 @@ local function check()
         for _, target in ipairs(targetList) do
             if (target == nameText) then
                 isKilling = true
-                if inDungeon then return end
+                if inDungeon then 
+                    isKilling = false
+                    return
+                end
                 kill(monster)
                 isKilling = false
                 break
@@ -906,8 +909,8 @@ end
         -- use case for doing it this way:
         -- a script hub could have themes in a global folder
         -- and game configs in a separate folder per game
-        InterfaceManager:SetFolder("FluentScriptHub")
-        SaveManager:SetFolder("FluentScriptHub/AnimeWeapons")
+        InterfaceManager:SetFolder("TigerHubConfig")
+        SaveManager:SetFolder("TigerHubConfig/AnimeWeapons")
 
         InterfaceManager:BuildInterfaceSection(tabs.Settings)
         SaveManager:BuildConfigSection(tabs.Settings)
