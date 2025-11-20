@@ -49,7 +49,30 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-warn("1")
+warn("12")
+task.spawn(function()
+    while true do 
+        local args = {
+            "Settings",
+            {
+                "AutoAttack",
+                true
+            }
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+        task.wait(1)
+    end
+end)
+task.spawn(function()
+    while true do
+        attackRangePart =  workspace:FindFirstChild("AttackRange")
+        if not attackRangePart then return end
+        if attackRangePart then attackRangePart = attackRangePart.Part end
+        attackRange = attackRangePart.Size.X/2
+        task.wait(1)
+    end
+end)
+
 task.spawn(function()
 	while true do
 		warn(inDungeon, isDungeon, wave)
@@ -116,12 +139,7 @@ local function loadData()
 
 end
 
-task.spawn(function()
-   attackRangePart =  workspace:FindFirstChild("AttackRange")
-   if not attackRangePart then return end
-   if attackRangePart then attackRangePart = attackRangePart.Part end
-   attackRange = attackRangePart.Size.X/2
-end)
+
 
 local function FindHRP(player)
     for _, zone in ipairs(workspace.Zones:GetChildren()) do
@@ -168,19 +186,7 @@ waveGui:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
-task.spawn(function()
-    while true do 
-        local args = {
-            "Settings",
-            {
-                "AutoAttack",
-                true
-            }
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        task.wait(1)
-    end
-end)
+
 
 attackRangePart:GetPropertyChangedSignal("Size"):Connect(function()
     attackRange = attackRangePart.Size.X/2
