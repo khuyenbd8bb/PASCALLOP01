@@ -369,7 +369,7 @@ local function killDungeon(monster)
     local head = monster:FindFirstChild("Head")
     if not head then return end
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = 0
+    local safeHeight = -2
     --local alive = head.Transparency
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 3)        
@@ -380,12 +380,14 @@ local function killDungeon(monster)
         end
         if checkFolderRaidZones() and wave > targetWave then 
             inDungeon = false
+            task.wait(1)
             teleportBack()
             return
         end
         hrp.CFrame = CFrame.new(targetPosition)
         if not checkFolderDungeonZones() and not checkFolderRaidZones() then 
             inDungeon = false
+            task.wait(1)
             teleportBack()
             return
         end
@@ -410,6 +412,7 @@ local function checkDungeon()
             if not inDungeon then return end
             if wave > targetWave and checkFolderRaidZones() then 
                 inDungeon = false
+                task.wait(1)
                 teleportBack()
                 return
             end
@@ -481,7 +484,10 @@ local function joinDungeon()
         while checkFolderDungeonZones() do
             task.wait()
         end
-        if not checkFolderDungeonZones() and isDungeon then teleportBack() end
+        if not checkFolderDungeonZones() and isDungeon then 
+            task.wait(1)
+            teleportBack() 
+        end
     elseif isTargetRaid then 
         local number = raidNumber[isTargetRaid]
         local Raid = "Raid:".. tostring(number)
@@ -498,6 +504,7 @@ local function joinDungeon()
             task.wait()
         end
         if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
+            task.wait(1)
             teleportBack()
         end
     end
