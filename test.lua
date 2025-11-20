@@ -50,12 +50,6 @@ local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
 task.spawn(function()
-    while true do
-            warn(isDungeon, inDungeon)
-            task.wait(10)
-            end
-end)
-task.spawn(function()
     while true do 
         local args = {
             "Settings",
@@ -242,9 +236,12 @@ end
 local function kill(monster)
     local head = monster:FindFirstChild("Head")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = 0
+    local safeHeight = -2
     --local alive = head.Transparency
-    if inDungeon then return end 
+    if inDungeon then 
+        isKilling = false
+        return
+    end
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
     hrp.CFrame = CFrame.new(targetPosition)
@@ -263,12 +260,16 @@ local function kill(monster)
         connection:Disconnect()
         alive = false
     end)
-    while keepRunning and stillTarget and not inDungeon and alive do
+    while keepRunning and stillTarget  and alive do
         hrp.CFrame = CFrame.new(targetPosition)
         if getDistance(attackRangePart, monster) > distance then 
             return
         end
         stillTarget = false
+        if inDungeon then 
+            isKilling = false
+            return
+        end
         for _, target in pairs(targetList) do
             if not monster.Parent or not monster then return end
             if monster.Name == "" then return end
@@ -342,7 +343,7 @@ local function teleportBack()
         }
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        warn("TELEPORTED")
+    inDungeon = false
 end
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
@@ -440,7 +441,9 @@ local function joinDungeon()
         while checkFolderDungeonZones() do
             task.wait()
         end
-        if not checkFolderDungeonZones() and isDungeon then teleportBack() end
+        if not checkFolderDungeonZones() and isDungeon then 
+            teleportBack() 
+        end
         return 
     end
     
@@ -613,7 +616,7 @@ end
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 02.1",
+        Title = "Tiger HUB | Anime Weapons | Version: 2.2",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
