@@ -49,10 +49,10 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-warn(">???")
+warn(">???3")
 task.spawn(function()
 	while true do
-		warn(inDungeon, isDungeon)
+		warn(inDungeon, isDungeon, wave)
 		task.wait(10)
 	end
 end)
@@ -409,7 +409,9 @@ local function checkDungeon()
             if not isDungeon then return end
             if not inDungeon then return end
             if wave > targetWave and checkFolderRaidZones() then 
+                inDungeon = false
                 teleportBack()
+                wave = 0
                 return
             end
             local Head = monster:FindFirstChild("Head")
@@ -444,7 +446,10 @@ local function joinDungeon()
         while checkFolderRaidZones() do
             task.wait()
         end
-        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then teleportBack() end
+        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
+            teleportBack() 
+            wave = 0
+        end
         return 
     end
     
@@ -494,7 +499,10 @@ local function joinDungeon()
         while checkFolderRaidZones() do
             task.wait()
         end
-        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then teleportBack() end
+        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
+            teleportBack()
+            wave = 0
+        end
     end
     
 end
