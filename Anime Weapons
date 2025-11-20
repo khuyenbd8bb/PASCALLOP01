@@ -1,3 +1,4 @@
+_G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -48,6 +49,13 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
+warn("hi")
+task.spawn(function()
+	while true do
+		warn(inDungeon, isDungeon)
+		task.wait(5)
+	end
+end)
 task.spawn(function()
     while true do
         task.wait()
@@ -329,6 +337,7 @@ local function teleportBack()
         }
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+	warn("TELEPORT BACK")
 end
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
@@ -367,6 +376,7 @@ local function killDungeon(monster)
         if getDistance(attackRangePart, monster) > distance then 
             return
         end
+		warn(checkFolderRaidZones(), wave, targetWave)
         if checkFolderRaidZones() and wave > targetWave then 
             inDungeon = false
             teleportBack()
