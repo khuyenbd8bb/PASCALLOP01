@@ -411,7 +411,6 @@ local function checkDungeon()
             if wave > targetWave and checkFolderRaidZones() then 
                 inDungeon = false
                 teleportBack()
-                wave = 0
                 return
             end
             local Head = monster:FindFirstChild("Head")
@@ -448,7 +447,6 @@ local function joinDungeon()
         end
         if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
             teleportBack() 
-            wave = 0
         end
         return 
     end
@@ -501,13 +499,14 @@ local function joinDungeon()
         end
         if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
             teleportBack()
-            wave = 0
         end
     end
     
 end
 local function autoFarmDungeon()
     while (isDungeon) do
+        wave = 0
+        room = 0
         joinDungeon()
         task.wait(1)    
     end
