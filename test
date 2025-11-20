@@ -53,7 +53,7 @@ warn("hi")
 task.spawn(function()
 	while true do
 		warn(inDungeon, isDungeon)
-		task.wait(5)
+		task.wait(10)
 	end
 end)
 task.spawn(function()
@@ -376,6 +376,7 @@ local function killDungeon(monster)
         if getDistance(attackRangePart, monster) > distance then 
             return
         end
+		warn(checkFolderRaidZones(), wave, targetWave)
         if checkFolderRaidZones() and wave > targetWave then 
             inDungeon = false
             teleportBack()
@@ -397,7 +398,7 @@ local function checkDungeon()
     end
     
     while room <= targetRoom and inDungeon and isDungeon do 
-        
+        warn(checkFolderRaidZones(), wave, targetWave, 2)
         local monsters = workspace.Enemies:GetChildren()
         if (#monsters == 0) then 
             if not checkFolderDungeonZones() and not checkFolderRaidZones() then inDungeon = false end
@@ -407,6 +408,10 @@ local function checkDungeon()
         for _, monster in pairs(monsters) do
             if not isDungeon then return end
             if not inDungeon then return end
+            if wave > targetWave and checkFolderRaidZones() then 
+                teleportBack()
+                return
+            end
             local Head = monster:FindFirstChild("Head")
             if not Head then continue end
             if Head.Transparency ~= 0 then continue end
