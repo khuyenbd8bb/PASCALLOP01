@@ -49,7 +49,7 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-warn("123")
+warn("123!")
 task.spawn(function()
     while true do 
         local args = {
