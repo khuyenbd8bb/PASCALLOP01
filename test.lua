@@ -51,7 +51,7 @@ local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
 task.spawn(function()
     while true do 
-        warn("IS IN DUNGEON ?",inDungeon)
+        warn("IS IN DUNGEON: ",inDungeon)
         task.wait(10)
     end
 end)
@@ -356,7 +356,7 @@ end
 
 task.spawn(function()
     while true do
-        inDungeon = checkFolderDungeonZones 
+        inDungeon = checkFolderDungeonZones()
         if not inDungeon then inDungeon = checkFolderDungeonZones() end
         task.wait()
     end 
