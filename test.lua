@@ -50,7 +50,10 @@ local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
 task.spawn(function()
-    warn(inDungeon)
+    while true do 
+        warn("IS IN DUNGEON ?",inDungeon)
+        task.wait(10)
+    end
 end)
 
 task.spawn(function()
@@ -546,10 +549,11 @@ local function autoTeleportFarm()
             task.wait()
             continue 
         end
+        warn("Passed1")
         for _, location in ipairs(locationTargetList) do
             teleportTo(location)
         end
-
+        warn("Passed 2")
         if not inDungeon and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
             local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
             local safeHeight = 0
