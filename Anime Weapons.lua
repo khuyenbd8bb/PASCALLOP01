@@ -49,7 +49,6 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-warn("LOL")
 task.spawn(function()
     while true do 
         local args = {
@@ -237,9 +236,12 @@ end
 local function kill(monster)
     local head = monster:FindFirstChild("Head")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = 0
+    local safeHeight = -2
     --local alive = head.Transparency
-    if inDungeon then return end 
+    if inDungeon then 
+        isKilling = false
+        return
+    end
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
     hrp.CFrame = CFrame.new(targetPosition)
@@ -258,12 +260,16 @@ local function kill(monster)
         connection:Disconnect()
         alive = false
     end)
-    while keepRunning and stillTarget and not inDungeon and alive do
+    while keepRunning and stillTarget  and alive do
         hrp.CFrame = CFrame.new(targetPosition)
         if getDistance(attackRangePart, monster) > distance then 
             return
         end
         stillTarget = false
+        if inDungeon then 
+            isKilling = false
+            return
+        end
         for _, target in pairs(targetList) do
             if not monster.Parent or not monster then return end
             if monster.Name == "" then return end
@@ -296,7 +302,10 @@ local function check()
         for _, target in ipairs(targetList) do
             if (target == nameText) then
                 isKilling = true
-                if inDungeon then return end
+                if inDungeon then 
+                    isKilling = false
+                    return
+                end
                 kill(monster)
                 isKilling = false
                 break
@@ -334,6 +343,7 @@ local function teleportBack()
         }
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+    inDungeon = false
 end
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
@@ -363,7 +373,7 @@ local function killDungeon(monster)
     local head = monster:FindFirstChild("Head")
     if not head then return end
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = 0
+    local safeHeight = -2
     --local alive = head.Transparency
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 3)        
@@ -374,12 +384,14 @@ local function killDungeon(monster)
         end
         if checkFolderRaidZones() and wave > targetWave then 
             inDungeon = false
+            task.wait(1)
             teleportBack()
             return
         end
         hrp.CFrame = CFrame.new(targetPosition)
         if not checkFolderDungeonZones() and not checkFolderRaidZones() then 
             inDungeon = false
+            task.wait(1)
             teleportBack()
             return
         end
@@ -404,6 +416,7 @@ local function checkDungeon()
             if not inDungeon then return end
             if wave > targetWave and checkFolderRaidZones() then 
                 inDungeon = false
+                task.wait(1)
                 teleportBack()
                 return
             end
@@ -428,7 +441,9 @@ local function joinDungeon()
         while checkFolderDungeonZones() do
             task.wait()
         end
-        if not checkFolderDungeonZones() and isDungeon then teleportBack() end
+        if not checkFolderDungeonZones() and isDungeon then 
+            teleportBack() 
+        end
         return 
     end
     
@@ -475,7 +490,10 @@ local function joinDungeon()
         while checkFolderDungeonZones() do
             task.wait()
         end
-        if not checkFolderDungeonZones() and isDungeon then teleportBack() end
+        if not checkFolderDungeonZones() and isDungeon then 
+            task.wait(1)
+            teleportBack() 
+        end
     elseif isTargetRaid then 
         local number = raidNumber[isTargetRaid]
         local Raid = "Raid:".. tostring(number)
@@ -492,6 +510,7 @@ local function joinDungeon()
             task.wait()
         end
         if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
+            task.wait(1)
             teleportBack()
         end
     end
@@ -597,7 +616,7 @@ end
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 02.1",
+        Title = "Tiger HUB | Anime Weapons | Version: 2.2",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -893,8 +912,8 @@ end
         -- use case for doing it this way:
         -- a script hub could have themes in a global folder
         -- and game configs in a separate folder per game
-        InterfaceManager:SetFolder("FluentScriptHub")
-        SaveManager:SetFolder("FluentScriptHub/AnimeWeapons")
+        InterfaceManager:SetFolder("TigerHubConfig")
+        SaveManager:SetFolder("TigerHubConfig/AnimeWeapons")
 
         InterfaceManager:BuildInterfaceSection(tabs.Settings)
         SaveManager:BuildConfigSection(tabs.Settings)
