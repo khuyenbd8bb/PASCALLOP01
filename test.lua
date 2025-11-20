@@ -357,7 +357,7 @@ end
 task.spawn(function()
     while true do
         inDungeon = checkFolderDungeonZones()
-        if not inDungeon then inDungeon = checkFolderDungeonZones() end
+        if inDungeon == false then inDungeon = checkFolderDungeonZones() end
         task.wait()
     end 
 end)
@@ -372,7 +372,7 @@ end)
 
 local previousMap
 local function teleportBack()
-    if not previousMap then return end
+    if not previousMap then previousMap = teleportBackMap end
     local args = {
         "Zone Teleport",
         {
