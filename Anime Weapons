@@ -398,7 +398,7 @@ local function checkDungeon()
     end
     
     while room <= targetRoom and inDungeon and isDungeon do 
-        
+        warn(checkFolderRaidZones(), wave, targetWave, 2)
         local monsters = workspace.Enemies:GetChildren()
         if (#monsters == 0) then 
             if not checkFolderDungeonZones() and not checkFolderRaidZones() then inDungeon = false end
