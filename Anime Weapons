@@ -53,7 +53,7 @@ warn("hi")
 task.spawn(function()
 	while true do
 		warn(inDungeon, isDungeon)
-		task.wait(5)
+		task.wait(10)
 	end
 end)
 task.spawn(function()
