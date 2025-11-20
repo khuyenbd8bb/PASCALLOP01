@@ -597,7 +597,7 @@ end
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 02",
+        Title = "Tiger HUB | Anime Weapons | Version: 02.1",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -625,8 +625,8 @@ end
     do
         loadData()
         local MultiDropdown = tabs.Main:AddDropdown("MultiDropdown", {
-            Title = "Select Enemies on map",
-            Description = "Select Enemies to kill",
+            Title = "Select Enemies",
+            Description = "ONLY WORK WITH INSTANT KILL",
             Values = {},
             Multi = true,
             Default = {},
@@ -866,7 +866,7 @@ end
         CopyScriptPath.Name = ""
         CopyScriptPath.Parent = ScreenGui -- ⭐ MUST be parented to something visible
         CopyScriptPath.BackgroundColor3 = Color3.new(0.000000, 0.000000, 0.000000)
-        CopyScriptPath.Position = UDim2.new(0.5, -25, 0, 20)
+        CopyScriptPath.Position = UDim2.new(0, -25, 0, 20)
         CopyScriptPath.Size = UDim2.new(0, 50, 0, 50)
         CopyScriptPath.ZIndex = 15
         CopyScriptPath.Font = Enum.Font.SourceSans
