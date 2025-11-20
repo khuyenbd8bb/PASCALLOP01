@@ -242,7 +242,7 @@ end
 local function kill(monster)
     local head = monster:FindFirstChild("Head")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = 0
+    local safeHeight = -2
     --local alive = head.Transparency
     if inDungeon then return end 
     local headPos = getPosition(head)
