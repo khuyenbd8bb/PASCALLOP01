@@ -49,7 +49,7 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-warn("hi")
+warn(">???")
 task.spawn(function()
 	while true do
 		warn(inDungeon, isDungeon)
