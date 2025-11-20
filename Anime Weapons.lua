@@ -49,6 +49,7 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
+warn("LOL")
 task.spawn(function()
     while true do 
         local args = {
@@ -596,7 +597,7 @@ end
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 01",
+        Title = "Tiger HUB | Anime Weapons | Version: 02",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
