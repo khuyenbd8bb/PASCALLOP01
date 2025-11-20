@@ -49,7 +49,7 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-warn("123!")
+warn("LOL")
 task.spawn(function()
     while true do 
         local args = {
@@ -73,12 +73,7 @@ task.spawn(function()
     end
 end)
 
-task.spawn(function()
-	while true do
-		warn(inDungeon, isDungeon, wave)
-		task.wait(10)
-	end
-end)
+
 task.spawn(function()
     while true do
         task.wait()
@@ -339,7 +334,6 @@ local function teleportBack()
         }
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-	warn("TELEPORT BACK")
 end
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
@@ -378,7 +372,6 @@ local function killDungeon(monster)
         if getDistance(attackRangePart, monster) > distance then 
             return
         end
-		warn(checkFolderRaidZones(), wave, targetWave)
         if checkFolderRaidZones() and wave > targetWave then 
             inDungeon = false
             teleportBack()
@@ -400,12 +393,12 @@ local function checkDungeon()
     end
     
     while room <= targetRoom and inDungeon and isDungeon do 
-        warn(checkFolderRaidZones(), wave, targetWave, 2)
         local monsters = workspace.Enemies:GetChildren()
         if (#monsters == 0) then 
             if not checkFolderDungeonZones() and not checkFolderRaidZones() then inDungeon = false end
             task.wait()
         end
+        warn(room, wave, checkFolderRaidZones())
         if not checkFolderDungeonZones() and not checkFolderRaidZones() then return end
         for _, monster in pairs(monsters) do
             if not isDungeon then return end
