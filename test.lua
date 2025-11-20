@@ -357,7 +357,7 @@ end
 task.spawn(function()
     while true do
         inDungeon = checkFolderDungeonZones()
-        if inDungeon == false then inDungeon = checkFolderDungeonZones() end
+        if inDungeon == false then inDungeon = checkFolderRaidZones() end
         task.wait()
     end 
 end)
@@ -554,7 +554,7 @@ local function autoTeleportFarm()
             teleportTo(location)
         end
         warn("Passed 2")
-        if not inDungeon and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
+        if inDungeon == false and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
             local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
             local safeHeight = 0
             --local alive = head.Transparency
