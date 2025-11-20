@@ -49,7 +49,7 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-warn(">???30")
+warn("1")
 task.spawn(function()
 	while true do
 		warn(inDungeon, isDungeon, wave)
@@ -168,9 +168,6 @@ waveGui:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
-attackRangePart:GetPropertyChangedSignal("Size"):Connect(function()
-    attackRange = attackRangePart.Size.X/2
-end)
 task.spawn(function()
     while true do 
         local args = {
@@ -184,6 +181,12 @@ task.spawn(function()
         task.wait(1)
     end
 end)
+
+attackRangePart:GetPropertyChangedSignal("Size"):Connect(function()
+    attackRange = attackRangePart.Size.X/2
+end)
+
+
 
 local function getDistance(obj1, obj2)
     local pos1, pos2
