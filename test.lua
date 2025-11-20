@@ -398,7 +398,6 @@ local function checkDungeon()
             if not checkFolderDungeonZones() and not checkFolderRaidZones() then inDungeon = false end
             task.wait()
         end
-        warn(room, wave, checkFolderRaidZones())
         if not checkFolderDungeonZones() and not checkFolderRaidZones() then return end
         for _, monster in pairs(monsters) do
             if not isDungeon then return end
@@ -598,7 +597,7 @@ end
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 01",
+        Title = "Tiger HUB | Anime Weapons | Version: 02",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
