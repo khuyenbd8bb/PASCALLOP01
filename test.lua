@@ -49,7 +49,7 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-warn("12")
+warn("123")
 task.spawn(function()
     while true do 
         local args = {
@@ -185,13 +185,6 @@ waveGui:GetPropertyChangedSignal("Text"):Connect(function()
         wave = tonumber((string.gsub(waveGui.Text, "Wave: ", "")))
     end
 end)
-
-
-
-attackRangePart:GetPropertyChangedSignal("Size"):Connect(function()
-    attackRange = attackRangePart.Size.X/2
-end)
-
 
 
 local function getDistance(obj1, obj2)
