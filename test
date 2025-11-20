@@ -336,7 +336,7 @@ local function teleportBack()
         }
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-	warn("TELEPORTEDD")
+	warn("TELEPORT BACK")
 end
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
