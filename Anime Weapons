@@ -408,6 +408,10 @@ local function checkDungeon()
         for _, monster in pairs(monsters) do
             if not isDungeon then return end
             if not inDungeon then return end
+            if wave > targetWave and checkFolderRaidZones() then 
+                teleportBack()
+                return
+            end
             local Head = monster:FindFirstChild("Head")
             if not Head then continue end
             if Head.Transparency ~= 0 then continue end
