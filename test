@@ -50,10 +50,10 @@ local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
 task.spawn(function()
-	--while true do
+	while true do
 		--warn(inDungeon, isDungeon)
-		--task.wait(5)
-	--end
+		task.wait(5)
+	end
 end)
 task.spawn(function()
     while true do
