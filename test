@@ -51,7 +51,7 @@ local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
 task.spawn(function()
 	while true do
-		--warn(inDungeon, isDungeon)
+		warn(inDungeon, isDungeon)
 		task.wait(5)
 	end
 end)
