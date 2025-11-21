@@ -1,3 +1,4 @@
+--1
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -51,22 +52,37 @@ local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
 task.spawn(function()
     while true do 
-        local args = {
-            "Settings",
-            {
-                "AutoAttack",
-                true
-            }
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        task.wait(1)
+        warn("IS IN DUNGEON: ",inDungeon)
+        task.wait(10)
     end
 end)
+
+local function setAutoAttack()
+    local args = {
+        "Settings",
+        {
+            "AutoAttack",
+            true
+        }
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+end
+setAutoAttack()
+
 task.spawn(function()
     while true do
         attackRangePart =  workspace:FindFirstChild("AttackRange")
-        if not attackRangePart then return end
-        if attackRangePart then attackRangePart = attackRangePart.Part end
+        if not attackRangePart  then 
+            setAutoAttack() 
+            task.wait(1)
+            continue
+        end
+        attackRangePart = attackRangePart:FindFirstChild("Part")
+        if not attackRangePart  then 
+            setAutoAttack() 
+            task.wait(1)
+            continue
+        end
         attackRange = attackRangePart.Size.X/2
         task.wait(1)
     end
@@ -262,7 +278,11 @@ local function kill(monster)
     end)
     while keepRunning and stillTarget  and alive do
         hrp.CFrame = CFrame.new(targetPosition)
-        if getDistance(attackRangePart, monster) > distance then 
+        if not hrp then 
+            task.wait()
+            continue
+        end
+        if getDistance(hrp, monster) > distance then 
             return
         end
         stillTarget = false
@@ -289,7 +309,11 @@ local function check()
         if not monster:FindFirstChild("Head") then return end
         local Head = monster.Head
         if Head.Transparency ~= 0 then continue end
-        local dis = getDistance(attackRangePart, monster)
+        if not hrp then 
+            task.wait()
+            continue
+        end
+        local dis = getDistance(hrp, monster)
         if dis >= distance or dis <= attackRange then continue end
 
         if not monster then continue end
@@ -325,26 +349,29 @@ local function autoFarm()
 end
 
 --DDungeon
-task.spawn(function()
-    table.insert(dungeonList, "Easy");   dungeonNumber["Easy"] =   1; dungeonTime["Easy"] = 0
-    table.insert(dungeonList, "Medium"); dungeonNumber["Medium"] = 2; dungeonTime["Medium"] = 20
-    table.insert(dungeonList, "Hard");   dungeonNumber["Hard"] =   3; dungeonTime["Hard"] = 40
-    
-    table.insert(raidList, "Shinobi");   raidNumber["Shinobi"] = 1; raidTime["Shinobi"] = 10
-end)
-
 
 local function teleportBack()
-    if teleportBackMap == "None" then return end
-    local args = {
-        "Zone Teleport",
-        {
-            teleportBackMap
+    while true do
+        local Map = workspace.Zones:GetChildren()[1].Name
+        if (Map == teleportBackMap) then
+            task.wait(3)
+            continue
+        end
+        if inDungeon then 
+            task.wait(3)
+            continue
+        end
+        local args = {
+            "Zone Teleport",
+            {
+                teleportBackMap
+            }
         }
-    }
-    game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-    inDungeon = false
+        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+        task.wait(3)
+    end
 end
+
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
     if not chars then return false end
@@ -367,63 +394,59 @@ local function checkFolderRaidZones()
     return false
 end
 
+task.spawn(function()
+    while true do
+        inDungeon = checkFolderDungeonZones()
+        if inDungeon == false then inDungeon = checkFolderRaidZones() end
+        task.wait()
+    end 
+end)
+
+task.spawn(function()
+    table.insert(dungeonList, "Easy");   dungeonNumber["Easy"] =   1; dungeonTime["Easy"] = 0
+    table.insert(dungeonList, "Medium"); dungeonNumber["Medium"] = 2; dungeonTime["Medium"] = 20
+    table.insert(dungeonList, "Hard");   dungeonNumber["Hard"] =   3; dungeonTime["Hard"] = 40
+    
+    table.insert(raidList, "Shinobi");   raidNumber["Shinobi"] = 1; raidTime["Shinobi"] = 10
+end)
+
+
+
+
 local function killDungeon(monster)
-    if not inDungeon then return end
     if not monster then return end
     local head = monster:FindFirstChild("Head")
     if not head then return end
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
     local safeHeight = -2
-    --local alive = head.Transparency
+
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 3)        
     hrp.CFrame = CFrame.new(targetPosition)
     while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
-        if getDistance(attackRangePart, monster) > distance then 
-            return
+        if not hrp then 
+            task.wait()
+            continue
         end
-        if checkFolderRaidZones() and wave > targetWave then 
-            inDungeon = false
-            task.wait(1)
-            teleportBack()
+        if getDistance(hrp, monster) > distance then 
             return
         end
         hrp.CFrame = CFrame.new(targetPosition)
-        if not checkFolderDungeonZones() and not checkFolderRaidZones() then 
-            inDungeon = false
-            task.wait(1)
-            teleportBack()
-            return
-        end
         task.wait()
     end
 end
 
 local function checkDungeon() 
-    while not checkFolderDungeonZones() and not checkFolderRaidZones() and inDungeon and isDungeon do
-        task.wait()
-    end
-    
-    while room <= targetRoom and inDungeon and isDungeon do 
+    while room <= targetRoom and inDungeon and isDungeon and wave <= targetWave do 
         local monsters = workspace.Enemies:GetChildren()
-        if (#monsters == 0) then 
-            if not checkFolderDungeonZones() and not checkFolderRaidZones() then inDungeon = false end
-            task.wait()
-        end
-        if not checkFolderDungeonZones() and not checkFolderRaidZones() then return end
         for _, monster in pairs(monsters) do
-            if not isDungeon then return end
-            if not inDungeon then return end
-            if wave > targetWave and checkFolderRaidZones() then 
-                inDungeon = false
-                task.wait(1)
-                teleportBack()
-                return
-            end
             local Head = monster:FindFirstChild("Head")
-            if not Head then continue end
-            if Head.Transparency ~= 0 then continue end
-            local dis = getDistance(attackRangePart, monster)
+            if not Head or Head.Transparency ~= 0 or wave > targetWave then continue end
+            if not hrp then 
+                task.wait()
+                continue
+            end
+            local dis = getDistance(hrp, monster)
             if dis >= distance or dis <= attackRange then continue end
             killDungeon(monster)
             task.wait()
@@ -433,30 +456,13 @@ local function checkDungeon()
 end
 
 local function joinDungeon()
-    if inDungeon then return end
     if checkFolderDungeonZones() then
-        inDungeon = true
         checkDungeon()
-        inDungeon = false
-        while checkFolderDungeonZones() do
-            task.wait()
-        end
-        if not checkFolderDungeonZones() and isDungeon then 
-            teleportBack() 
-        end
-        return 
+        return
     end
     
     if checkFolderRaidZones() then
-        inDungeon = true
         checkDungeon()
-        inDungeon = false
-        while checkFolderRaidZones() do
-            task.wait()
-        end
-        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
-            teleportBack() 
-        end
         return 
     end
     
@@ -474,7 +480,6 @@ local function joinDungeon()
         end
     end
     if not isTargetDungeon and not isTargetRaid then return end
-    inDungeon = true
     if isTargetDungeon then 
         local number = dungeonNumber[isTargetDungeon]
         local Dungeon = "Dungeon:".. tostring(number)
@@ -486,14 +491,7 @@ local function joinDungeon()
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
         checkDungeon()
-        inDungeon = false
-        while checkFolderDungeonZones() do
-            task.wait()
-        end
-        if not checkFolderDungeonZones() and isDungeon then 
-            task.wait(1)
-            teleportBack() 
-        end
+
     elseif isTargetRaid then 
         local number = raidNumber[isTargetRaid]
         local Raid = "Raid:".. tostring(number)
@@ -505,14 +503,6 @@ local function joinDungeon()
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
         checkDungeon()
-        inDungeon = false
-        while checkFolderRaidZones() do
-            task.wait()
-        end
-        if (not checkFolderRaidZones() or wave > targetWave) and isDungeon then 
-            task.wait(1)
-            teleportBack()
-        end
     end
     
 end
@@ -552,7 +542,7 @@ local function autoHatch()
             continue 
         end
         if getDistance(gachaZone, hrp) <= 8.5 and canRepeat then
-            task.wait(0.1)
+            task.wait(2)
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
             local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
             Reliable:FireServer(
@@ -589,11 +579,12 @@ local function autoTeleportFarm()
             task.wait()
             continue 
         end
+        warn("Passed1")
         for _, location in ipairs(locationTargetList) do
             teleportTo(location)
         end
-
-        if not inDungeon and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
+        warn("Passed 2")
+        if inDungeon == false and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
             local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
             local safeHeight = 0
             --local alive = head.Transparency
@@ -809,8 +800,8 @@ end
         end)
 
         local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
-            Title = "Teleport Back after Dung/Raid",
-            Description = "Select Location to teleport",
+            Title = "Auto Teleport to Map",
+            Description = "IF NOT IN DUNGEON OR RAID",
             Values = {"None", "Naruto","DragonBall", "OnePiece", "DemonSlayer"},
             Multi = false,
             Default = "None",
