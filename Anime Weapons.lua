@@ -1,4 +1,3 @@
---1 
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -350,7 +349,7 @@ end
 
 --DDungeon
 
-local function teleportBack()
+task.spawn(function()
     while true do
         local Map = workspace.Zones:GetChildren()[1].Name
         if (Map == teleportBackMap) then
@@ -370,7 +369,7 @@ local function teleportBack()
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
         task.wait(3)
     end
-end
+end)
 
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
