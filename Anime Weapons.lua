@@ -1,4 +1,3 @@
--- HI
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -546,7 +545,6 @@ local function autoHatch()
             continue 
         end
         if getDistance(gachaZone, hrp) <= 8.5 and canRepeat then
-            task.wait(2)
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
             local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
             Reliable:FireServer(
