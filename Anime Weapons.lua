@@ -1,4 +1,3 @@
---00
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -50,12 +49,6 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-task.spawn(function()
-    while true do 
-        warn("IS IN DUNGEON: ",inDungeon)
-        task.wait(10)
-    end
-end)
 
 local function setAutoAttack()
     local args = {
@@ -372,6 +365,17 @@ task.spawn(function()
     end
 end)
 
+local function teleportBack() 
+    local args = {
+        "Zone Teleport",
+        {
+            teleportBackMap
+        }
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+    task.wait(3)
+end
+
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
     if not chars then return false end
@@ -424,6 +428,7 @@ local function killDungeon(monster)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 3)        
     hrp.CFrame = CFrame.new(targetPosition)
     while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
+        if wave > targetWave then teleportBack() end 
         if not hrp then 
             task.wait()
             continue
@@ -441,7 +446,7 @@ local function checkDungeon()
         local monsters = workspace.Enemies:GetChildren()
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
-            if wave > targetWave then return end 
+            if wave > targetWave then teleportBack() end 
             if not Head or Head.Transparency ~= 0 then continue end
             if not hrp then 
                 task.wait()
@@ -580,11 +585,9 @@ local function autoTeleportFarm()
             task.wait()
             continue 
         end
-        warn("Passed1")
         for _, location in ipairs(locationTargetList) do
             teleportTo(location)
         end
-        warn("Passed 2")
         if inDungeon == false and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
             local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
             local safeHeight = 0
