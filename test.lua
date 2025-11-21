@@ -277,6 +277,10 @@ local function kill(monster)
     end)
     while keepRunning and stillTarget  and alive do
         hrp.CFrame = CFrame.new(targetPosition)
+        if not attackRangePart then 
+            task.wait()
+            continue
+        end
         if getDistance(attackRangePart, monster) > distance then 
             return
         end
@@ -304,6 +308,10 @@ local function check()
         if not monster:FindFirstChild("Head") then return end
         local Head = monster.Head
         if Head.Transparency ~= 0 then continue end
+        if not attackRangePart then 
+            task.wait()
+            continue
+        end
         local dis = getDistance(attackRangePart, monster)
         if dis >= distance or dis <= attackRange then continue end
 
@@ -412,6 +420,10 @@ local function killDungeon(monster)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 3)        
     hrp.CFrame = CFrame.new(targetPosition)
     while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
+        if not attackRangePart then 
+            task.wait()
+            continue
+        end
         if getDistance(attackRangePart, monster) > distance then 
             return
         end
@@ -426,6 +438,10 @@ local function checkDungeon()
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
             if not Head or Head.Transparency ~= 0 or wave > targetWave then continue end
+            if not attackRangePart then 
+                task.wait()
+                continue
+            end
             local dis = getDistance(attackRangePart, monster)
             if dis >= distance or dis <= attackRange then continue end
             killDungeon(monster)
