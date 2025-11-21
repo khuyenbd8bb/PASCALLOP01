@@ -1,3 +1,4 @@
+-- hi
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -361,6 +362,7 @@ task.spawn(function()
             }
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+        warn("TELEPORTED 1")
         task.wait(3)
     end
 end)
@@ -373,6 +375,7 @@ local function teleportBack()
         }
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+    warn("TELEPORTED 2")
     task.wait(3)
 end
 
