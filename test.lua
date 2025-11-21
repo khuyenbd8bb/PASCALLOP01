@@ -769,7 +769,7 @@ end
 
         local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
             Title = "Auto Teleport to Map",
-            Description = "IF NOT INDUNGEON OR RAID",
+            Description = "IF NOT IN DUNGEON OR RAID",
             Values = {"None", "Naruto","DragonBall", "OnePiece", "DemonSlayer"},
             Multi = false,
             Default = "None",
