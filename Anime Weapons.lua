@@ -1,4 +1,3 @@
---- NEWEST
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -416,7 +415,7 @@ task.spawn(function()
 end)
 
 
-
+local checkingDungeon = false
 
 local function killDungeon(monster)
     if not monster then return end
@@ -443,6 +442,7 @@ local function killDungeon(monster)
 end
 
 local function checkDungeon() 
+    checkingDungeon = true
     while room <= targetRoom and inDungeon and isDungeon and wave <= targetWave do 
         local monsters = workspace.Enemies:GetChildren()
         for _, monster in pairs(monsters) do
@@ -460,6 +460,7 @@ local function checkDungeon()
         end
     task.wait()
     end
+    checkingDungeon = true
 end
 
 local function joinDungeon()
@@ -515,12 +516,10 @@ local function joinDungeon()
 end
 local function autoFarmDungeon()
     while (isDungeon) do
-        if inDungeon then 
+        if checkingDungeon then 
             task.wait()
             continue
         end
-        wave = 0
-        room = 0
         joinDungeon()
         task.wait(1)    
     end
