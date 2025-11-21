@@ -71,8 +71,15 @@ setAutoAttack()
 task.spawn(function()
     while true do
         attackRangePart =  workspace:FindFirstChild("AttackRange")
-        if not attackRangePart then setAutoAttack() end
-        if attackRangePart then attackRangePart = attackRangePart.Part end
+        if not attackRangePart  then 
+            setAutoAttack() 
+            continue
+        end
+        attackRangePart = attackRangePart:FindFirstChild("Part")
+        if not attackRangePart  then 
+            setAutoAttack() 
+            continue
+        end
         attackRange = attackRangePart.Size.X/2
         task.wait(1)
     end
