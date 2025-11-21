@@ -1,4 +1,3 @@
--- 123123123123
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -50,12 +49,6 @@ local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 -- Main
-task.spawn(function()
-    while true do 
-        warn("IS IN DUNGEON: ",inDungeon)
-        task.wait(10)
-    end
-end)
 
 local function setAutoAttack()
     local args = {
@@ -350,7 +343,7 @@ end
 
 --DDungeon
 
-local function teleportBack()
+task.spawn(function()
     while true do
         local Map = workspace.Zones:GetChildren()[1].Name
         if (Map == teleportBackMap) then
@@ -370,6 +363,17 @@ local function teleportBack()
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
         task.wait(3)
     end
+end)
+
+local function teleportBack() 
+    local args = {
+        "Zone Teleport",
+        {
+            teleportBackMap
+        }
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+    task.wait(3)
 end
 
 local function isPlayerInZone(zone)
@@ -398,7 +402,6 @@ task.spawn(function()
     while true do
         inDungeon = checkFolderDungeonZones()
         if inDungeon == false then inDungeon = checkFolderRaidZones() end
-        if inDungeon == false then teleportBack() end
         task.wait()
     end 
 end)
@@ -412,7 +415,7 @@ task.spawn(function()
 end)
 
 
-
+local checkingDungeon = false
 
 local function killDungeon(monster)
     if not monster then return end
@@ -425,6 +428,7 @@ local function killDungeon(monster)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 3)        
     hrp.CFrame = CFrame.new(targetPosition)
     while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
+        if wave > targetWave then teleportBack() end 
         if not hrp then 
             task.wait()
             continue
@@ -438,11 +442,13 @@ local function killDungeon(monster)
 end
 
 local function checkDungeon() 
+    checkingDungeon = true
     while room <= targetRoom and inDungeon and isDungeon and wave <= targetWave do 
         local monsters = workspace.Enemies:GetChildren()
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
-            if not Head or Head.Transparency ~= 0 or wave > targetWave then continue end
+            if wave > targetWave then teleportBack() end 
+            if not Head or Head.Transparency ~= 0 then continue end
             if not hrp then 
                 task.wait()
                 continue
@@ -454,6 +460,7 @@ local function checkDungeon()
         end
     task.wait()
     end
+    checkingDungeon = true
 end
 
 local function joinDungeon()
@@ -505,10 +512,10 @@ local function joinDungeon()
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
         checkDungeon()
     end
-    
 end
 local function autoFarmDungeon()
     while (isDungeon) do
+        warn(wave, room)
         wave = 0
         room = 0
         joinDungeon()
@@ -522,7 +529,7 @@ local function autoFuse()
         "Weapon Fuse All"
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        task.wait(5)
+        task.wait(10)
     end 
 end
 
@@ -532,7 +539,7 @@ local function autoRankUp()
         "RankUp"
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-    task.wait(5)
+    task.wait(10)
     end 
 end
 local canRepeat = true
@@ -580,11 +587,9 @@ local function autoTeleportFarm()
             task.wait()
             continue 
         end
-        warn("Passed1")
         for _, location in ipairs(locationTargetList) do
             teleportTo(location)
         end
-        warn("Passed 2")
         if inDungeon == false and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
             local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
             local safeHeight = 0
@@ -608,7 +613,7 @@ end
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 2.2",
+        Title = "Tiger HUB | Anime Weapons | Version: 2.3 | Dungeon/Raid Rework",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
