@@ -56,23 +56,22 @@ task.spawn(function()
     end
 end)
 
-task.spawn(function()
-    while true do 
-        local args = {
-            "Settings",
-            {
-                "AutoAttack",
-                true
-            }
+local function setAutoAttack()
+    local args = {
+        "Settings",
+        {
+            "AutoAttack",
+            true
         }
-        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        task.wait(1)
-    end
-end)
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+end
+setAutoAttack()
+
 task.spawn(function()
     while true do
         attackRangePart =  workspace:FindFirstChild("AttackRange")
-        if not attackRangePart then return end
+        if not attackRangePart then setAutoAttack() end
         if attackRangePart then attackRangePart = attackRangePart.Part end
         attackRange = attackRangePart.Size.X/2
         task.wait(1)
@@ -332,6 +331,24 @@ local function autoFarm()
 end
 
 --DDungeon
+
+local previousMap
+local function teleportBack()
+    while true do
+        if not previousMap then previousMap = teleportBackMap end
+        local Map = workspace.Zones:GetChildren()[1].Name
+        if (Map == previousMap) then continue end
+        local args = {
+            "Zone Teleport",
+            {
+                previousMap
+            }
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+        task.wait(3)
+    end
+end
+
 local function isPlayerInZone(zone)
     local chars = zone:FindFirstChild("Characters")
     if not chars then return false end
@@ -358,6 +375,7 @@ task.spawn(function()
     while true do
         inDungeon = checkFolderDungeonZones()
         if inDungeon == false then inDungeon = checkFolderRaidZones() end
+        if inDungeon == false then teleportBack() end
         task.wait()
     end 
 end)
@@ -370,17 +388,7 @@ task.spawn(function()
     table.insert(raidList, "Shinobi");   raidNumber["Shinobi"] = 1; raidTime["Shinobi"] = 10
 end)
 
-local previousMap
-local function teleportBack()
-    if not previousMap then previousMap = teleportBackMap end
-    local args = {
-        "Zone Teleport",
-        {
-            previousMap
-        }
-    }
-    game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-end
+
 
 
 local function killDungeon(monster)
@@ -420,15 +428,11 @@ end
 local function joinDungeon()
     if checkFolderDungeonZones() then
         checkDungeon()
-        if isDungeon then  teleportBack() end
         return
     end
     
     if checkFolderRaidZones() then
         checkDungeon()
-        if isDungeon and wave > targetWave then 
-            teleportBack() 
-        end
         return 
     end
     
@@ -458,7 +462,6 @@ local function joinDungeon()
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
         checkDungeon()
-        if isDungeon then  teleportBack() end
 
     elseif isTargetRaid then 
         local number = raidNumber[isTargetRaid]
@@ -471,8 +474,6 @@ local function joinDungeon()
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
         checkDungeon()
-
-        if wave > targetWave and isDungeon then teleportBack() end
     end
     
 end
@@ -512,7 +513,7 @@ local function autoHatch()
             continue 
         end
         if getDistance(gachaZone, hrp) <= 8.5 and canRepeat then
-            task.wait(0.1)
+            task.wait(2)
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
             local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
             Reliable:FireServer(
