@@ -1,3 +1,4 @@
+-- Helo
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -415,7 +416,6 @@ task.spawn(function()
 end)
 
 
-local checkingDungeon = false
 
 local function killDungeon(monster)
     if not monster then return end
@@ -428,7 +428,6 @@ local function killDungeon(monster)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 3)        
     hrp.CFrame = CFrame.new(targetPosition)
     while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
-        if wave > targetWave then teleportBack() end 
         if not hrp then 
             task.wait()
             continue
@@ -442,12 +441,10 @@ local function killDungeon(monster)
 end
 
 local function checkDungeon() 
-    checkingDungeon = true
     while room <= targetRoom and inDungeon and isDungeon and wave <= targetWave do 
         local monsters = workspace.Enemies:GetChildren()
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
-            if wave > targetWave then teleportBack() end 
             if not Head or Head.Transparency ~= 0 then continue end
             if not hrp then 
                 task.wait()
@@ -460,7 +457,7 @@ local function checkDungeon()
         end
     task.wait()
     end
-    checkingDungeon = true
+    if isDungeon and wave > targetWave then teleportBack() end
 end
 
 local function joinDungeon()
