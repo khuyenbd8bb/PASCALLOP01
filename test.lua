@@ -344,7 +344,10 @@ end
 local function teleportBack()
     while true do
         local Map = workspace.Zones:GetChildren()[1].Name
-        if (Map == teleportBackMap) then continue end
+        if (Map == teleportBackMap) then
+            task.wait(3)
+            continue
+        end
         local args = {
             "Zone Teleport",
             {
