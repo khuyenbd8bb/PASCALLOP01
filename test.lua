@@ -1,4 +1,4 @@
--- 123213
+-- 123123123123
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -357,7 +357,10 @@ local function teleportBack()
             task.wait(3)
             continue
         end
-        warn(Map, teleportBackMap)
+        if inDungeon then 
+            task.wait(3)
+            continue
+        end
         local args = {
             "Zone Teleport",
             {
