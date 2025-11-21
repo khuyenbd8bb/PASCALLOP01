@@ -1,3 +1,4 @@
+--00
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -440,7 +441,8 @@ local function checkDungeon()
         local monsters = workspace.Enemies:GetChildren()
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
-            if not Head or Head.Transparency ~= 0 or wave > targetWave then continue end
+            if wave > targetWave then return end 
+            if not Head or Head.Transparency ~= 0 then continue end
             if not hrp then 
                 task.wait()
                 continue
@@ -606,7 +608,7 @@ end
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 2.2",
+        Title = "Tiger HUB | Anime Weapons | Version: 2.3 | Dungeon/Raid Rework",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
