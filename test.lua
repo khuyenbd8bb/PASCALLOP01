@@ -332,16 +332,14 @@ end
 
 --DDungeon
 
-local previousMap
 local function teleportBack()
     while true do
-        if not previousMap then previousMap = teleportBackMap end
         local Map = workspace.Zones:GetChildren()[1].Name
-        if (Map == previousMap) then continue end
+        if (Map == teleportBackMap) then continue end
         local args = {
             "Zone Teleport",
             {
-                previousMap
+                teleportBackMap
             }
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
@@ -450,7 +448,6 @@ local function joinDungeon()
         end
     end
     if not isTargetDungeon and not isTargetRaid then return end
-    previousMap = workspace.Zones:GetChildren()[1].Name
     if isTargetDungeon then 
         local number = dungeonNumber[isTargetDungeon]
         local Dungeon = "Dungeon:".. tostring(number)
@@ -771,8 +768,8 @@ end
         end)
 
         local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
-            Title = "Teleport Back after Dung/Raid",
-            Description = "Select Location to teleport",
+            Title = "Auto Teleport to Map",
+            Description = "IF NOT INDUNGEON OR RAID",
             Values = {"None", "Naruto","DragonBall", "OnePiece", "DemonSlayer"},
             Multi = false,
             Default = "None",
