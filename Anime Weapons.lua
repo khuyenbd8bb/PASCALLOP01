@@ -1,3 +1,4 @@
+--- ?
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -512,14 +513,9 @@ local function joinDungeon()
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
         checkDungeon()
     end
-    
 end
 local function autoFarmDungeon()
     while (isDungeon) do
-        if checkingDungeon then 
-            task.wait()
-            continue
-        end
         joinDungeon()
         task.wait(1)    
     end
