@@ -362,7 +362,7 @@ task.spawn(function()
             }
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        task.wait(3)
+        task.wait(6)
     end
 end)
 
@@ -374,7 +374,7 @@ local function teleportBack()
         }
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-    task.wait(3)
+    task.wait(6)
 end
 
 local function isPlayerInZone(zone)
@@ -804,7 +804,7 @@ end
         local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
             Title = "Auto Teleport to Map",
             Description = "IF NOT IN DUNGEON OR RAID",
-            Values = {"None", "Naruto","DragonBall", "OnePiece", "DemonSlayer"},
+            Values = {"None", "Naruto","DragonBall", "OnePiece", "DemonSlayer", "Paradis"},
             Multi = false,
             Default = "None",
         })
