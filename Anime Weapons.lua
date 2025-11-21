@@ -520,7 +520,7 @@ local function autoFuse()
         "Weapon Fuse All"
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        task.wait(5)
+        task.wait(10)
     end 
 end
 
@@ -530,7 +530,7 @@ local function autoRankUp()
         "RankUp"
     }
     game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-    task.wait(5)
+    task.wait(10)
     end 
 end
 local canRepeat = true
