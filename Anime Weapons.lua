@@ -1,4 +1,3 @@
---- ?
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -516,6 +515,9 @@ local function joinDungeon()
 end
 local function autoFarmDungeon()
     while (isDungeon) do
+        warn(wave, room)
+        wave = 0
+        room = 0
         joinDungeon()
         task.wait(1)    
     end
