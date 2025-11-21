@@ -1,4 +1,4 @@
--- Helo
+-- HI
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -9,6 +9,7 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Config-Library/main/Main.lua"))()
 local TextChatService = game:GetService("TextChatService")
+local HatchGui = game:GetService("Players").LocalPlayer.PlayerGui
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -538,24 +539,20 @@ local function autoRankUp()
     task.wait(10)
     end 
 end
-local canRepeat = true
+
 local function autoHatch()
     while isHatch do
         if not gachaZone or typeof(gachaZone) ~= "Instance" or typeof(hrp) ~= "Instance" then 
             task.wait() 
             continue 
         end
-        if getDistance(gachaZone, hrp) <= 8.5 and canRepeat then
+        if getDistance(gachaZone, hrp) <= 8.5 and not HatchGui:FindFirstChild("CloseAutoOpen") then
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
             local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
             Reliable:FireServer(
                 "Gacha Auto"
             )
-            canRepeat = false   
         end 
-        if getDistance(gachaZone, hrp) > 9 then 
-            canRepeat = true
-        end
         task.wait()
     end
 end
