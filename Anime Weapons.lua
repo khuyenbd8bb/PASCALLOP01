@@ -605,7 +605,7 @@ end
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 2.3 | Dungeon/Raid Rework",
+        Title = "Tiger HUB | Anime Weapons | Version: 2.4 | Anti Afk",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
