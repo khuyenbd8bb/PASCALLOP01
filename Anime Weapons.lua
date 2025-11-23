@@ -1,4 +1,4 @@
-
+-- hello world
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -914,10 +914,47 @@ end
         -- which has been marked to be one that auto loads!
         SaveManager:LoadAutoloadConfig()
         tabs.Settings:AddSection("Only work with lastest config")
-
     end
+    local function activateBypass(func, ui, index)
+        while true do
+            debug.setupvalue(func, index, 100)
+            task.wait()
+        end
+    end
+    local targetFound = false
+    local function deepScan(func, path)
+            if not islclosure(func) then return end
+            local upvalues = debug.getupvalues(func)
+            local foundUI = nil
+            local foundNumIndex = nil
+            for i, v in pairs(upvalues) do
+                if typeof(v) == "Instance" then warn(v.Name, type(v)) end
+                if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end
+                if type(v) == "number" then 
+                    foundNumIndex = i 
+                end
+            end
+            if foundUI and foundNumIndex then
+                if targetFound == false then
+                    targetFound = true
+                    activateBypass(func, foundUI, foundNumIndex)
+                end
+            end
+        end
+    for _, func in pairs(getgc()) do
+        if type(func) == "function" and islclosure(func) and not isexecutorclosure(func) then
+                local info = debug.getinfo(func)
+                if info.source and string.find(info.source, "AutoReconnect.c") then deepScan(func, "Main") end
+        end
+    end
+    local VirtualUser = game:GetService('VirtualUser')
+
+    game:GetService('Players').LocalPlayer.Idled:Connect(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
 end
- 
+
 
 
 --part.CanCollide = false -- Players can walk through
