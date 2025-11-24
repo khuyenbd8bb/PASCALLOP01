@@ -1,5 +1,5 @@
 -- HELO
-_G.Key = "AnimeWeapons"
+_G.Key = "AnimeWeapons" 
 local key = _G.Key
 local Access = "AnimeWeapons"
 
