@@ -1,4 +1,3 @@
--- hello world
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -17,23 +16,23 @@ local player = Players.LocalPlayer
 local distance = 500
 local waveGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Raid.wave.amount
 local roomGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Dungeon.room.amount
-local room = tonumber((string.gsub(roomGui.Text, "Room: ", "")))
-local wave = tonumber((string.gsub(waveGui.Text, "Room: ", "")))
-if not wave then wave = tonumber((string.gsub(waveGui.Text, "Wave: ", ""))) end
+local defGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Defense.wave.amount
+
+local waveRaid = 0;local waveDungeon = 0; local waveDef = 0;
+local targetWaveRaid = 500; local targetWaveDef = 500; local targetWaveDungeon = 500;
 
 local gachaZone
-local targetWave = 500
-local targetRoom = 50
 local attackRangePart 
 local attackRange 
 
 local monsterList = {} -- Name, HumanoidRoot
 local nameList = {} -- Table HUB
 local targetList = {}
-local dungeonList = {};   local raidList = {}
-local targetDungeon = {}; local targetRaid = {}
-local dungeonNumber = {}; local raidNumber = {};
-local dungeonTime  =  {}; local raidTime  =  {}
+local dungeonList = {};   local raidList = {}; local defList = {}; 
+local targetDungeon = {}; local targetRaid = {}; local targetDef = {};
+local dungeonNumber = {}; local raidNumber = {}; local defNumber = {};
+local dungeonTime  =  {}; local raidTime  =  {}; local defTime = {};
+
 local teleportBackMap = "None"
 
 local repeatTime = 1
@@ -182,12 +181,20 @@ player.CharacterAdded:Connect(function(character)
 end)
 
 roomGui:GetPropertyChangedSignal("Text"):Connect(function()
-    room = tonumber((string.gsub(roomGui.Text, "Room: ", "")))
+    waveDungeon = tonumber((string.gsub(roomGui.Text, "Room: ", "")))
 end)
+
 waveGui:GetPropertyChangedSignal("Text"):Connect(function()
-    wave = tonumber((string.gsub(waveGui.Text, "Room: ", "")))
-    if not wave then
-        wave = tonumber((string.gsub(waveGui.Text, "Wave: ", "")))
+    waveRaid = tonumber((string.gsub(waveGui.Text, "Room: ", "")))
+    if not waveRaid then
+        waveRaid = tonumber((string.gsub(waveGui.Text, "Wave: ", "")))
+    end
+end)
+
+defGui:GetPropertyChangedSignal("Text"):Connect(function()
+    waveDef = tonumber((string.gsub(defGui.Text, "Room: ", "")))
+    if not waveDef then
+        waveDef = tonumber((string.gsub(defGui.Text, "Wave: ", "")))
     end
 end)
 
@@ -400,10 +407,18 @@ local function checkFolderRaidZones()
     return false
 end
 
+local function checkFolderDefZones()
+    local location = workspace.Zones:GetChildren()
+    if location[1] and string.find(location[1].Name, "Defense:") and isPlayerInZone(location[1]) then return true end
+    if #location ~= 1 and location[2] and string.find(location[2].Name, "Defense:") and isPlayerInZone(location[2]) then return true end
+    return false
+end
+
 task.spawn(function()
     while true do
         inDungeon = checkFolderDungeonZones()
         if inDungeon == false then inDungeon = checkFolderRaidZones() end
+        if inDungeon == false then inDungeon = checkFolderDefZones() end
         task.wait()
     end 
 end)
@@ -414,6 +429,8 @@ task.spawn(function()
     table.insert(dungeonList, "Hard");   dungeonNumber["Hard"] =   3; dungeonTime["Hard"] = 40
     
     table.insert(raidList, "Shinobi");   raidNumber["Shinobi"] = 1; raidTime["Shinobi"] = 10
+
+    table.insert(defList, "Easy");  defNumber["Easy"] = 1;  defTime["Easy"] = 0
 end)
 
 
@@ -442,7 +459,7 @@ local function killDungeon(monster)
 end
 
 local function checkDungeon() 
-    while room <= targetRoom and inDungeon and isDungeon and wave <= targetWave do 
+    while waveDungeon <= targetWaveDungeon and inDungeon and isDungeon and waveRaid <= targetWaveRaid and waveDef <= targetWaveDef do 
         local monsters = workspace.Enemies:GetChildren()
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
@@ -458,7 +475,7 @@ local function checkDungeon()
         end
     task.wait()
     end
-    if isDungeon and wave > targetWave then teleportBack() end
+    if isDungeon and waveRaid > targetWaveRaid or waveDef > targetWaveDef then teleportBack() end
 end
 
 local function joinDungeon()
@@ -471,9 +488,15 @@ local function joinDungeon()
         checkDungeon()
         return 
     end
+
+    if checkFolderDefZones() then
+        checkDungeon()
+        return 
+    end
     
     local isTargetDungeon = false
     local isTargetRaid = false
+    local isTargetDef = false
     currentTime = os.date("*t")
     for _, dungeon in pairs(targetDungeon) do
         if dungeonTime[dungeon] == currentTime.min then 
@@ -485,7 +508,12 @@ local function joinDungeon()
             isTargetRaid = raid
         end
     end
-    if not isTargetDungeon and not isTargetRaid then return end
+    for _, def in pairs(targetDef) do
+        if defTime[def] == currentTime.min or defTime[def] + 30 == currentTime.min then 
+            isTargetDef = def
+        end
+    end
+    if not isTargetDungeon and not isTargetRaid and not isTargetDef then return end
     if isTargetDungeon then 
         local number = dungeonNumber[isTargetDungeon]
         local Dungeon = "Dungeon:".. tostring(number)
@@ -509,12 +537,23 @@ local function joinDungeon()
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
         checkDungeon()
+    elseif  isTargetDef then 
+        local number = defNumber[isTargetDef]
+        local Def = "Defense:".. tostring(number)
+        local args = {
+            "Join Gamemode",
+            {
+                Def
+            }
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+        checkDungeon()
     end
 end
 local function autoFarmDungeon()
     while (isDungeon) do
-        wave = 0
-        room = 0
+        waveRaid = 0
+        waveDungeon = 0
         joinDungeon()
         task.wait(1)    
     end
@@ -605,7 +644,7 @@ end
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 2.4 | Anti Afk",
+        Title = "Tiger HUB | Anime Weapons | Version: 2.5 | Defense Mode",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -788,6 +827,25 @@ end
             end
         end)
 
+        local dropdownDef = tabs.Dungeon:AddDropdown("dropdownDef", {
+            Title = "Defense",
+            Description = "Select Defense Mode to auto farm",
+            Values = {},
+            Multi = true,
+            Default = {},
+        })
+        dropdownDef:SetValues(defList)
+
+        dropdownDef:OnChanged(function(selectedValues)
+            table.clear(targetDef)
+
+            for name, state in pairs(selectedValues) do
+                if state then
+                    table.insert(targetDef, name)
+                end
+            end
+        end)
+
         local toogleFarmDungeon = tabs.Dungeon:AddToggle("toogleFarmDungeon", {Title = "Auto Farm Dungeons/ Raids", Default = false})
         toogleFarmDungeon:OnChanged(function()
             isDungeon = toogleFarmDungeon.Value
@@ -809,7 +867,7 @@ end
             teleportBackMap = selectedValues
         end)
 
-        local inputTargetWave = tabs.Dungeon:AddInput("inputTargetWave", {
+        local inputTargetWaveRaid = tabs.Dungeon:AddInput("inputTargetWaveRaid", {
             Title = "Target Wave (Raid)",
             Description = "Leave after this wave",
             Default = 500,
@@ -819,10 +877,27 @@ end
             Callback = function(Value)
             end
         })
-        inputTargetWave:OnChanged(function()
-            if inputTargetWave.Value == nil or not inputTargetWave.Value then
-                targetWave = 100 else
-                targetWave = tonumber(inputTargetWave.Value)
+        inputTargetWaveRaid:OnChanged(function()
+            if inputTargetWaveRaid.Value == nil or not inputTargetWaveRaid.Value then
+                targetWaveRaid = 100 else
+                targetWaveRaid = tonumber(inputTargetWaveRaid.Value)
+            end
+        end)
+
+        local inputTargetWaveDef = tabs.Dungeon:AddInput("inputTargetWaveDef", {
+            Title = "Target Wave (Defense)",
+            Description = "Leave after this wave",
+            Default = 500,
+            Placeholder = "Placeholder",
+            Numeric = true, -- Only allows numbers
+            Finished = true, -- Only calls callback when you press enter
+            Callback = function(Value)
+            end
+        })
+        inputTargetWaveDef:OnChanged(function()
+            if inputTargetWaveDef.Value == nil or not inputTargetWaveDef.Value then
+                targetWaveDef = 100 else
+                targetWaveDef = tonumber(inputTargetWaveDef.Value)
             end
         end)
 
@@ -928,7 +1003,6 @@ end
             local foundUI = nil
             local foundNumIndex = nil
             for i, v in pairs(upvalues) do
-                if typeof(v) == "Instance" then warn(v.Name, type(v)) end
                 if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end
                 if type(v) == "number" then 
                     foundNumIndex = i 
