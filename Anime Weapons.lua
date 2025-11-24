@@ -1,3 +1,4 @@
+-- No1
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -401,7 +402,6 @@ local function checkFolderDungeonZones()
     local location = workspace.Zones:GetChildren()
     if location[1] and string.find(location[1].Name, "Dungeon:") and isPlayerInZone(location[1]) then return true end
     if #location ~= 1 and location[2] and string.find(location[2].Name, "Dungeon:") and isPlayerInZone(location[2]) then return true end
-    warn("not in 1")
     return false
 end
 
@@ -409,7 +409,6 @@ local function checkFolderRaidZones()
     local location = workspace.Zones:GetChildren()
     if location[1] and string.find(location[1].Name, "Raid:") and isPlayerInZone(location[1]) then return true end
     if #location ~= 1 and location[2] and string.find(location[2].Name, "Raid:") and isPlayerInZone(location[2]) then return true end
-    warn("not in 2")
     return false
 end
 
@@ -417,7 +416,6 @@ local function checkFolderDefZones()
     local location = workspace.Zones:GetChildren()
     if location[1] and string.find(location[1].Name, "Defense:") and isPlayerInZone(location[1]) then return true end
     if #location ~= 1 and location[2] and string.find(location[2].Name, "Defense:") and isPlayerInZone(location[2]) then return true end
-    warn("not in 3")
     return false
 end
 
@@ -461,7 +459,8 @@ local function killDungeon(monster)
             return
         end
         hrp.CFrame = CFrame.new(targetPosition)
-        targetPosition = getPosition(head) + Vector3.new(5, hrpToFeet + safeHeight, 3)     
+        local newtargetPosition = getPosition(head) + Vector3.new(5, hrpToFeet + safeHeight, 3)   
+        if (newtargetPosition-targetPosition).Magnitude > 10 then targetPosition = newtargetPosition end
         task.wait()
     end
 end
@@ -1017,7 +1016,7 @@ end
                     foundNumIndex = i 
                 end
             end
-            if foundUI and foundNumIndex then  
+            if foundUI and foundNumIndex then
                 if targetFound == false then
                     targetFound = true
                     activateBypass(func, foundUI, foundNumIndex)
