@@ -1,4 +1,3 @@
----123?
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -355,6 +354,10 @@ end
 
 task.spawn(function()
     while true do
+        if #workspace.Zones:GetChildren() == 0 then
+            task.wait()
+            continue
+        end
         local Map = workspace.Zones:GetChildren()[1].Name
         if (Map == teleportBackMap) then
             task.wait()
@@ -398,6 +401,7 @@ local function checkFolderDungeonZones()
     local location = workspace.Zones:GetChildren()
     if location[1] and string.find(location[1].Name, "Dungeon:") and isPlayerInZone(location[1]) then return true end
     if #location ~= 1 and location[2] and string.find(location[2].Name, "Dungeon:") and isPlayerInZone(location[2]) then return true end
+    warn("not in 1")
     return false
 end
 
@@ -405,6 +409,7 @@ local function checkFolderRaidZones()
     local location = workspace.Zones:GetChildren()
     if location[1] and string.find(location[1].Name, "Raid:") and isPlayerInZone(location[1]) then return true end
     if #location ~= 1 and location[2] and string.find(location[2].Name, "Raid:") and isPlayerInZone(location[2]) then return true end
+    warn("not in 2")
     return false
 end
 
@@ -412,6 +417,7 @@ local function checkFolderDefZones()
     local location = workspace.Zones:GetChildren()
     if location[1] and string.find(location[1].Name, "Defense:") and isPlayerInZone(location[1]) then return true end
     if #location ~= 1 and location[2] and string.find(location[2].Name, "Defense:") and isPlayerInZone(location[2]) then return true end
+    warn("not in 3")
     return false
 end
 
@@ -420,7 +426,7 @@ task.spawn(function()
         inDungeon = checkFolderDungeonZones()
         if inDungeon == false then inDungeon = checkFolderRaidZones() end
         if inDungeon == false then inDungeon = checkFolderDefZones() end
-        task.wait()
+        task.wait(5)
     end 
 end)
 
