@@ -1,3 +1,4 @@
+---123?
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -356,11 +357,11 @@ task.spawn(function()
     while true do
         local Map = workspace.Zones:GetChildren()[1].Name
         if (Map == teleportBackMap) then
-            task.wait(3)
+            task.wait()
             continue
         end
         if inDungeon then 
-            task.wait(3)
+            task.wait()
             continue
         end
         local args = {
@@ -454,6 +455,7 @@ local function killDungeon(monster)
             return
         end
         hrp.CFrame = CFrame.new(targetPosition)
+        targetPosition = getPosition(head) + Vector3.new(5, hrpToFeet + safeHeight, 3)     
         task.wait()
     end
 end
@@ -554,6 +556,7 @@ local function autoFarmDungeon()
     while (isDungeon) do
         waveRaid = 0
         waveDungeon = 0
+        waveDef = 0
         joinDungeon()
         task.wait(1)    
     end
@@ -623,7 +626,7 @@ local function autoTeleportFarm()
         end
         if inDungeon == false and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
             local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-            local safeHeight = 0  
+            local safeHeight = 0
             --local alive = head.Transparency
             local headPos = getPosition(gachaZone)
             local targetPosition = headPos + Vector3.new(3, hrpToFeet + safeHeight, 3)      
