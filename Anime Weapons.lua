@@ -1,4 +1,3 @@
--- HELO
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -356,7 +355,7 @@ end
 task.spawn(function()
     while true do
         if #workspace.Zones:GetChildren() == 0 then
-            task.wait()
+            task.wait(6)
             continue
         end
         local Map = workspace.Zones:GetChildren()[1].Name
@@ -1014,7 +1013,7 @@ end
                 if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end
                 if type(v) == "number" then 
                     foundNumIndex = i 
-                end 
+                end
             end
             if foundUI and foundNumIndex then
                 if targetFound == false then
