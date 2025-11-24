@@ -1,5 +1,5 @@
 -- HELO
-_G.Key = "AnimeWeapons" 
+_G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -989,7 +989,7 @@ end
 
         InterfaceManager:BuildInterfaceSection(tabs.Settings)
         SaveManager:BuildConfigSection(tabs.Settings)
- 
+
 
         Window:SelectTab(1)
 
@@ -1014,7 +1014,7 @@ end
                 if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end
                 if type(v) == "number" then 
                     foundNumIndex = i 
-                end
+                end 
             end
             if foundUI and foundNumIndex then
                 if targetFound == false then
