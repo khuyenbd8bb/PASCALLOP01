@@ -989,7 +989,7 @@ end
 
         InterfaceManager:BuildInterfaceSection(tabs.Settings)
         SaveManager:BuildConfigSection(tabs.Settings)
-
+ 
 
         Window:SelectTab(1)
 
