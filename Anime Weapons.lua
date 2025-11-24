@@ -623,7 +623,7 @@ local function autoTeleportFarm()
         end
         if inDungeon == false and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
             local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-            local safeHeight = 0
+            local safeHeight = 0  
             --local alive = head.Transparency
             local headPos = getPosition(gachaZone)
             local targetPosition = headPos + Vector3.new(3, hrpToFeet + safeHeight, 3)      
