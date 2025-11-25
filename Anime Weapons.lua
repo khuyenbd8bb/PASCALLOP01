@@ -1022,7 +1022,7 @@ end
                 end
             end
             if foundUI and foundNumIndex then
-                if targetFound == false then
+                if targetFound == false then 
                     targetFound = true
                     activateBypass(func, foundUI, foundNumIndex)
                 end
