@@ -1,3 +1,4 @@
+--hi
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -481,7 +482,7 @@ local function checkDungeon()
         end
     task.wait()
     end
-    if isDungeon and waveRaid > targetWaveRaid or waveDef > targetWaveDef then teleportBack() end
+    if isDungeon and (waveRaid > targetWaveRaid or waveDef > targetWaveDef) then teleportBack() end
 end
 
 local function joinDungeon()
