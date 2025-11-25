@@ -1,3 +1,4 @@
+--123
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -426,7 +427,6 @@ task.spawn(function()
         inDungeon = checkFolderDungeonZones()
         if inDungeon == false then inDungeon = checkFolderRaidZones() end
         if inDungeon == false then inDungeon = checkFolderDefZones() end
-        task.wait(5)
     end 
 end)
 
@@ -482,12 +482,12 @@ local function checkDungeon()
             local dis = getDistance(hrp, monster)
             if dis >= distance or dis <= attackRange then continue end
             killDungeon(monster)
-            dontTeleport = false
             task.wait()
         end
     task.wait()
     end
     if isDungeon and waveRaid > targetWaveRaid or waveDef > targetWaveDef then teleportBack() end
+    dontTeleport = false
 end
 
 local function joinDungeon()
@@ -1022,7 +1022,7 @@ end
                 end
             end
             if foundUI and foundNumIndex then
-                if targetFound == false then 
+                if targetFound == false then
                     targetFound = true
                     activateBypass(func, foundUI, foundNumIndex)
                 end
