@@ -1,4 +1,4 @@
---123
+---123
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -427,6 +427,7 @@ task.spawn(function()
         inDungeon = checkFolderDungeonZones()
         if inDungeon == false then inDungeon = checkFolderRaidZones() end
         if inDungeon == false then inDungeon = checkFolderDefZones() end
+        task.wait()
     end 
 end)
 
