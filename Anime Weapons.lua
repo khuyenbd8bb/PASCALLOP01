@@ -1,4 +1,3 @@
---hi
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -39,6 +38,7 @@ local teleportBackMap = "None"
 local repeatTime = 1
 local locationList = {}; local locationNumber = {}; 
 local locationTargetList = {}
+
 local isTeleportFarm = false
 local isTeleportHatch = false
 
@@ -50,7 +50,9 @@ local isKilling = false
 local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
+
 -- Main
+
 
 local function setAutoAttack()
     local args = {
@@ -352,10 +354,10 @@ local function autoFarm()
 end
 
 --DDungeon
-
+local dontTeleport = false
 task.spawn(function()
     while true do
-        if #workspace.Zones:GetChildren() == 0 then
+        if #workspace.Zones:GetChildren() == 0 or dontTeleport then
             task.wait(6)
             continue
         end
@@ -466,8 +468,10 @@ local function killDungeon(monster)
 end
 
 local function checkDungeon() 
+    dontTeleport = true
     while waveDungeon <= targetWaveDungeon and inDungeon and isDungeon and waveRaid <= targetWaveRaid and waveDef <= targetWaveDef do 
         local monsters = workspace.Enemies:GetChildren()
+        if #monsters == 0 then continue end
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
             if not Head or Head.Transparency ~= 0 then continue end
@@ -478,11 +482,12 @@ local function checkDungeon()
             local dis = getDistance(hrp, monster)
             if dis >= distance or dis <= attackRange then continue end
             killDungeon(monster)
+            dontTeleport = false
             task.wait()
         end
     task.wait()
     end
-    if isDungeon and (waveRaid > targetWaveRaid or waveDef > targetWaveDef) then teleportBack() end
+    if isDungeon and waveRaid > targetWaveRaid or waveDef > targetWaveDef then teleportBack() end
 end
 
 local function joinDungeon()
