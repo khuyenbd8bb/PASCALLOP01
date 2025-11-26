@@ -1,4 +1,4 @@
--- Accesory
+---- Accessory
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
