@@ -1,3 +1,4 @@
+-- Accesory
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -25,11 +26,9 @@ local targetWaveRaid = 500; local targetWaveDef = 500; local targetWaveDungeon =
 
 local gachaZone
 local attackRangePart 
-local attackRange 
+local attackRange = 15
 
-local monsterList = {} -- Name, HumanoidRoot
-local nameList = {} -- Table HUB
-local targetList = {}
+local monsterList = {} ; local nameList = {}; local targetList = {}
 local dungeonList = {};   local raidList = {}; local defList = {}; 
 local targetDungeon = {}; local targetRaid = {}; local targetDef = {};
 local dungeonNumber = {}; local raidNumber = {}; local defNumber = {};
@@ -37,8 +36,8 @@ local dungeonTime  =  {}; local raidTime  =  {}; local defTime = {};
 local powerList = {}; local tooglePower = {};
 
 
-local teleportBackMap = "None"
-
+local teleportBackMap = "None";
+local masteryAccessory = ""; local damageAccessory = ""
 local repeatTime = 1
 local locationList = {}; local locationNumber = {}; 
 local locationTargetList = {}
@@ -509,6 +508,13 @@ local function autoEquipPower()
             mode
         }
     )
+    if mode == "Mastery" then mode = masteryAccessory else mode = damageAccessory end
+    Reliable:FireServer(
+        "Accessory Equip",
+        {
+            mode
+        }
+    )
 end
 
 task.spawn(function()
@@ -521,7 +527,7 @@ task.spawn(function()
         else 
             autoEquipPower() 
         end
-        task.wait()    
+        task.wait(0.1)    
     end 
 end)
 
@@ -545,7 +551,7 @@ local function killDungeon(monster)
     local safeHeight = -2
 
     local headPos = getPosition(head)
-    local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 3)        
+    local targetPosition = headPos + Vector3.new(-10, hrpToFeet + safeHeight, 0)        
     hrp.CFrame = CFrame.new(targetPosition)
     while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
         if not hrp then 
@@ -557,7 +563,7 @@ local function killDungeon(monster)
         end
         hrp.CFrame = CFrame.new(targetPosition)
         local newtargetPosition = getPosition(head) + Vector3.new(5, hrpToFeet + safeHeight, 3)   
-        if (newtargetPosition-targetPosition).Magnitude > 10 then targetPosition = newtargetPosition end
+        if (newtargetPosition-targetPosition).Magnitude >= attackRange - 1 then targetPosition = newtargetPosition end
         task.wait()
     end
 end
@@ -794,7 +800,7 @@ end)
 
 -- GGUI
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 3.0 | Power Pannel",
+        Title = "Tiger HUB | Anime Weapons | Version: 3.1 | Accessory Equip Best",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -1015,10 +1021,6 @@ end)
                 autoFarmDungeon()
             end
         end)
-        local toogleAutoEquipPower = tabs.Dungeon:AddToggle("toogleAutoEquipPower", {Title = "Auto Equip Best Damge in GameMode", Default = false, Description = "Will switch back to Mastery after gamemode"})
-        toogleAutoEquipPower:OnChanged(function()
-            isAutoEquipPower = toogleAutoEquipPower.Value
-        end)
 
         local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
             Title = "Auto Teleport to Map",
@@ -1064,6 +1066,38 @@ end)
                 targetWaveDef = 100 else
                 targetWaveDef = tonumber(inputTargetWaveDef.Value)
             end
+        end)
+        local SectionD = tabs.Dungeon:AddSection("Auto change power/ Accessory")
+        local inputDamageAccessory = tabs.Dungeon:AddInput("inputDamageAccessory", {
+            Title = "Damage Accessory Name",
+            Description = "Remove Space/blank",
+            Default = "WildHead",
+            Placeholder = "Remove Space/blank",
+            Numeric = false, -- Only allows numbers
+            Finished = true, -- Only calls callback when you press enter
+            Callback = function(Value)
+            end
+        })
+        inputDamageAccessory:OnChanged(function()
+            damageAccessory = inputDamageAccessory.Value
+        end)
+        local inputMasteryAccessory = tabs.Dungeon:AddInput("inputMasteryAccessory", {
+            Title = "Damage Accessory Name",
+            Description = "Remove Space/blank",
+            Default = "EletricDrums",
+            Placeholder = "Remove Space/blank",
+            Numeric = false, -- Only allows numbers
+            Finished = true, -- Only calls callback when you press enter
+            Callback = function(Value)
+            end
+        })
+        inputMasteryAccessory:OnChanged(function()
+            masteryAccessory = inputMasteryAccessory.Value
+        end)
+
+        local toogleAutoEquipPower = tabs.Dungeon:AddToggle("toogleAutoEquipPower", {Title = "Auto Equip Best Damge in GameMode", Default = false, Description = "Will switch back to Mastery after gamemode"})
+        toogleAutoEquipPower:OnChanged(function()
+            isAutoEquipPower = toogleAutoEquipPower.Value
         end)
 
         -- SStronger
