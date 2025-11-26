@@ -1106,7 +1106,7 @@ end)
                 if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end
                 if type(v) == "number" then 
                     foundNumIndex = i 
-                end
+                end 
             end
             if foundUI and foundNumIndex then
                 if targetFound == false then
