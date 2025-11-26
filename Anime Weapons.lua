@@ -552,7 +552,7 @@ local function killDungeon(monster)
     local safeHeight = -2
 
     local headPos = getPosition(head)
-    local targetPosition = headPos + Vector3.new(-10, hrpToFeet + safeHeight, 0)        
+    local targetPosition = headPos + Vector3.new(-attackRange+5, hrpToFeet + safeHeight, 0)        
     hrp.CFrame = CFrame.new(targetPosition)
     while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
         if not hrp then 
@@ -563,7 +563,7 @@ local function killDungeon(monster)
             return
         end
         hrp.CFrame = CFrame.new(targetPosition)
-        local newtargetPosition = getPosition(head) + Vector3.new(-10, hrpToFeet + safeHeight, 0)   
+        local newtargetPosition = getPosition(head) + Vector3.new(-attackRange+5, hrpToFeet + safeHeight, 0)   
         if (newtargetPosition - getPosition(head)).Magnitude >= attackRange - 1 then targetPosition = newtargetPosition end
         task.wait()
     end
@@ -1070,7 +1070,7 @@ end)
         end)
         local SectionD = tabs.Dungeon:AddSection("Auto change power/ Accessory in gamemode")
         local inputDamageAccessory = tabs.Dungeon:AddInput("inputDamageAccessory", {
-            Title = "Damage Accessory Name",
+            Title = "in GameMode Accessory Name",
             Description = "Remove Space/blank",
             Default = "WildHead",
             Placeholder = "Remove Space/blank",
@@ -1083,7 +1083,7 @@ end)
             damageAccessory = inputDamageAccessory.Value
         end)
         local inputMasteryAccessory = tabs.Dungeon:AddInput("inputMasteryAccessory", {
-            Title = "Damage Accessory Name",
+            Title = "out GameMode Accessory Name",
             Description = "Remove Space/blank",
             Default = "EletricDrums",
             Placeholder = "Remove Space/blank",
