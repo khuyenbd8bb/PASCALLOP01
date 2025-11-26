@@ -1,3 +1,4 @@
+---- Accessory
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -1067,7 +1068,7 @@ end)
                 targetWaveDef = tonumber(inputTargetWaveDef.Value)
             end
         end)
-        local SectionD = tabs.Dungeon:AddSection("Auto change power/ Accessory")
+        local SectionD = tabs.Dungeon:AddSection("Auto change power/ Accessory in gamemode")
         local inputDamageAccessory = tabs.Dungeon:AddInput("inputDamageAccessory", {
             Title = "Damage Accessory Name",
             Description = "Remove Space/blank",
