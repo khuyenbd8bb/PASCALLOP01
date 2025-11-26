@@ -3,6 +3,7 @@ local key = _G.Key
 local Access = "AnimeWeapons"
 
 if game.PlaceId == 79189799490564 and key == Access then
+local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
@@ -56,6 +57,69 @@ local currentTime = os.date("*t") -- Use os.date() not os.time()
 
 -- Main
 
+local function maskName(name)
+    if #name <= 3 then
+        return name -- too short to mask
+    end
+    local first = string.sub(name, 1, 1)
+    local last2 = string.sub(name, -2)
+    local res = first.. "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*" .. last2
+    return res
+end
+local req = syn and syn.request or http and http.request or request
+local data = {
+    embeds = {{
+        title = maskName(player.Name).. " Executed your script!",
+    }}
+}
+
+req({
+    Url = Webhook,
+    Method = "POST",
+    Headers = {
+        ["Content-Type"] = "application/json"
+    },
+    Body = game:GetService("HttpService"):JSONEncode(data)
+})
+
+task.spawn(function()
+    local function activateBypass(func, ui, index)
+        while true do
+            debug.setupvalue(func, index, 100)
+            task.wait()
+        end
+    end
+    local targetFound = false
+    local function deepScan(func, path)
+            if not islclosure(func) then return end
+            local upvalues = debug.getupvalues(func)
+            local foundUI = nil
+            local foundNumIndex = nil
+            for i, v in pairs(upvalues) do
+                if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end
+                if type(v) == "number" then 
+                    foundNumIndex = i 
+                end
+            end
+            if foundUI and foundNumIndex then
+                if targetFound == false then
+                    targetFound = true
+                    activateBypass(func, foundUI, foundNumIndex)
+                end
+            end
+        end
+    for _, func in pairs(getgc()) do
+        if type(func) == "function" and islclosure(func) and not isexecutorclosure(func) then
+                local info = debug.getinfo(func)
+                if info.source and string.find(info.source, "AutoReconnect.c") then deepScan(func, "Main") end
+        end
+    end
+    local VirtualUser = game:GetService('VirtualUser')
+    game:GetService('Players').LocalPlayer.Idled:Connect(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
+end)
 
 local function setAutoAttack()
     local args = {
@@ -722,7 +786,7 @@ task.spawn(function()
                     false
                 }
             )
-            task.wait(0.2)
+            task.wait(0.4)
         end
         task.wait()
     end
@@ -1090,43 +1154,7 @@ end)
         SaveManager:LoadAutoloadConfig()
         tabs.Settings:AddSection("Only work with lastest config")
     end
-    local function activateBypass(func, ui, index)
-        while true do
-            debug.setupvalue(func, index, 100)
-            task.wait()
-        end
-    end
-    local targetFound = false
-    local function deepScan(func, path)
-            if not islclosure(func) then return end
-            local upvalues = debug.getupvalues(func)
-            local foundUI = nil
-            local foundNumIndex = nil
-            for i, v in pairs(upvalues) do
-                if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end
-                if type(v) == "number" then 
-                    foundNumIndex = i 
-                end 
-            end
-            if foundUI and foundNumIndex then
-                if targetFound == false then
-                    targetFound = true
-                    activateBypass(func, foundUI, foundNumIndex)
-                end
-            end
-        end
-    for _, func in pairs(getgc()) do
-        if type(func) == "function" and islclosure(func) and not isexecutorclosure(func) then
-                local info = debug.getinfo(func)
-                if info.source and string.find(info.source, "AutoReconnect.c") then deepScan(func, "Main") end
-        end
-    end
-    local VirtualUser = game:GetService('VirtualUser')
-
-    game:GetService('Players').LocalPlayer.Idled:Connect(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end)
+    
 end
 
 
