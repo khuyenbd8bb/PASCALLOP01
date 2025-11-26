@@ -1103,7 +1103,7 @@ end)
             local foundUI = nil
             local foundNumIndex = nil
             for i, v in pairs(upvalues) do
-                if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end 
+                if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end
                 if type(v) == "number" then 
                     foundNumIndex = i 
                 end
