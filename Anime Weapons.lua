@@ -1,4 +1,3 @@
----- Accessory
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -508,11 +507,12 @@ local function autoEquipPower()
             mode
         }
     )
-    if mode == "Mastery" then mode = masteryAccessory else mode = damageAccessory end
+    local accessory = ""
+    if mode == "Mastery" then accessory = masteryAccessory else accessory = damageAccessory end
     Reliable:FireServer(
         "Accessory Equip",
         {
-            mode
+            accessory
         }
     )
 end
@@ -562,8 +562,8 @@ local function killDungeon(monster)
             return
         end
         hrp.CFrame = CFrame.new(targetPosition)
-        local newtargetPosition = getPosition(head) + Vector3.new(5, hrpToFeet + safeHeight, 3)   
-        if (newtargetPosition-targetPosition).Magnitude >= attackRange - 1 then targetPosition = newtargetPosition end
+        local newtargetPosition = getPosition(head) + Vector3.new(-10, hrpToFeet + safeHeight, 0)   
+        if (newtargetPosition - getPosition(head)).Magnitude >= attackRange - 1 then targetPosition = newtargetPosition end
         task.wait()
     end
 end
