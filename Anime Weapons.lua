@@ -1,4 +1,3 @@
----123
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -14,7 +13,8 @@ local HatchGui = game:GetService("Players").LocalPlayer.PlayerGui
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-local distance = 500
+local isAutoEquipPower = false
+local distance = 1000
 local waveGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Raid.wave.amount
 local roomGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Dungeon.room.amount
 local defGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Defense.wave.amount
@@ -33,6 +33,8 @@ local dungeonList = {};   local raidList = {}; local defList = {};
 local targetDungeon = {}; local targetRaid = {}; local targetDef = {};
 local dungeonNumber = {}; local raidNumber = {}; local defNumber = {};
 local dungeonTime  =  {}; local raidTime  =  {}; local defTime = {};
+local powerList = {}; local tooglePower = {};
+
 
 local teleportBackMap = "None"
 
@@ -82,25 +84,36 @@ task.spawn(function()
             continue
         end
         attackRange = attackRangePart.Size.X/2
-        task.wait(1)
+        task.wait(10)
     end
 end)
 
 
 task.spawn(function()
     while true do
-        task.wait()
-        if #workspace.Zones:GetChildren() < 1 then continue end
+        if #workspace.Zones:GetChildren() < 1 then   
+            task.wait(1)
+            continue
+        end
         gachaZone = workspace.Zones:GetChildren()[1]
         
         gachaZone = gachaZone:FindFirstChild("Utility")
-        if not gachaZone then continue end 
+        if not gachaZone then     
+            task.wait(1)
+            continue
+        end
         
         gachaZone = gachaZone:FindFirstChild("Gacha Machine")
-        if not gachaZone then continue end 
+        if not gachaZone  then   
+            task.wait(1)
+            continue
+        end
         
         gachaZone = gachaZone:FindFirstChild("Circle")
-        if not gachaZone then continue end 
+        if not gachaZone then
+            task.wait(1)
+            continue
+        end
         task.wait(1)
     end
 end)
@@ -421,13 +434,30 @@ local function checkFolderDefZones()
     if #location ~= 1 and location[2] and string.find(location[2].Name, "Defense:") and isPlayerInZone(location[2]) then return true end
     return false
 end
+local mode = "Mastery"
+local function autoEquipPower()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
+    if mode  == "Mastery" then mode = "Damage" else mode = "Mastery" end
+    Reliable:FireServer(
+        "Vault Equip Best",
+        {
+            mode
+        }
+    )
+end
 
 task.spawn(function()
     while true do
         inDungeon = checkFolderDungeonZones()
         if inDungeon == false then inDungeon = checkFolderRaidZones() end
         if inDungeon == false then inDungeon = checkFolderDefZones() end
-        task.wait()
+        if (inDungeon and mode == "Damage") or (inDungeon == false and mode == "Mastery") or isAutoEquipPower == false then 
+            task.wait()
+        else 
+            autoEquipPower() 
+        end
+        task.wait()    
     end 
 end)
 
@@ -654,11 +684,53 @@ local function addLocation()
     size = "Location #" .. tostring(size + 1)
     table.insert(locationList, {number = size, pos = Position})
 end
+-- PPower
+table.insert(powerList, {name = "Biju", auto = false})
+table.insert(powerList, {name = "MagicEyes", auto = false})
+table.insert(powerList, {name = "Race", auto = false})
+table.insert(powerList, {name = "Sayajin", auto = false})
+table.insert(powerList, {name = "Haki", auto = false})
+table.insert(powerList, {name = "Fruits", auto = false})
+table.insert(powerList, {name = "Breathing", auto = false})
+table.insert(powerList, {name = "DemonArt", auto = false})
+table.insert(powerList, {name = "Titan", auto = false})
+table.insert(powerList, {name = "Organization", auto = false})
+
+local function changePower(name, value)
+    for _, power in pairs(powerList) do
+        if power.name == name then 
+            power.auto = value
+            return
+        end
+    end
+end
+
+task.spawn(function()
+    while true do
+        for _, power in pairs(powerList) do
+            if power.auto == false then 
+                task.wait()
+                continue
+            end
+            local name = power.name
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
+            Reliable:FireServer(
+                "Crate Roll Start",
+                {
+                    name,
+                    false
+                }
+            )
+            task.wait(0.2)
+        end
+        task.wait()
+    end
+end)
 
 -- GGUI
-    
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 2.5 | Defense Mode",
+        Title = "Tiger HUB | Anime Weapons | Version: 3.0 | Power Pannel",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -677,13 +749,24 @@ end
     local tabs = {
         Main = Window:AddTab({ Title = "Farm", Icon = "swords" }),
         Farm2 = Window:AddTab({ Title = "Location Farm", Icon = "swords" }),
+        Power = Window:AddTab({ Title = "Auto Powers", Icon = "flame" }),
         Dungeon = Window:AddTab({ Title = "Dungeons/ Raids", Icon = "skull" }),
-        Powers = Window:AddTab({ Title = "Auto Stronger", Icon = "flame" }),
+        Stronger = Window:AddTab({ Title = "Auto Stronger", Icon = "flame" }),
         Settings = Window:AddTab({ Title = "Player Config", Icon = "user-cog" })
     }
-    
+
     local option1 = Fluent.Options
     do
+        -- PPower
+        for _, power in pairs(powerList) do 
+            local name = power.name 
+            tooglePower[name] = tabs.Power:AddToggle("toggle"..name, {Title = "Auto "..name, Default = false, Description = "",})
+            tooglePower[name]:OnChanged(function()
+                changePower(name, tooglePower[name].Value)
+            end)
+            task.wait()
+        end
+        -- FFarm1
         loadData()
         local MultiDropdown = tabs.Main:AddDropdown("MultiDropdown", {
             Title = "Select Enemies",
@@ -802,7 +885,7 @@ end
         toogleLocationHatch:OnChanged(function()
             isTeleportHatch = toogleLocationHatch.Value
         end)
-        --Dungeon
+        --DDungeon
         local dropdownDungeon = tabs.Dungeon:AddDropdown("dropdownDungeon", {
             Title = "Dungeons",
             Description = "Select Dungeon to auto farm",
@@ -868,6 +951,10 @@ end
                 autoFarmDungeon()
             end
         end)
+        local toogleAutoEquipPower = tabs.Dungeon:AddToggle("toogleAutoEquipPower", {Title = "Auto Equip Best Damge in GameMode", Default = false, Description = "Will switch back to Mastery after gamemode"})
+        toogleAutoEquipPower:OnChanged(function()
+            isAutoEquipPower = toogleAutoEquipPower.Value
+        end)
 
         local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
             Title = "Auto Teleport to Map",
@@ -916,22 +1003,21 @@ end
         end)
 
         -- SStronger
-        local toogleFuse = tabs.Powers:AddToggle("toogleFuse", {Title = "Auto Fuse Weapons", Default = false})
+        local toogleFuse = tabs.Stronger:AddToggle("toogleFuse", {Title = "Auto Fuse Weapons", Default = false})
         toogleFuse:OnChanged(function()
             isFuse = toogleFuse.Value
             autoFuse()
         end)
-        local toggleRank = tabs.Powers:AddToggle("toggleRank", {Title = "Auto RankUp", Default = false})
+        local toggleRank = tabs.Stronger:AddToggle("toggleRank", {Title = "Auto RankUp", Default = false})
         toggleRank:OnChanged(function()
             isRankUp = option1.toggleRank.Value
             task.spawn(function() autoRankUp() end)
         end)
-        local toggleHatch = tabs.Powers:AddToggle("toggleHatch", {Title = "Auto Gacha(nearby)", Default = false})
+        local toggleHatch = tabs.Stronger:AddToggle("toggleHatch", {Title = "Auto Gacha(nearby)", Default = false})
         toggleHatch:OnChanged(function()
             isHatch = option1.toggleHatch.Value
             task.spawn(function() autoHatch() end)
         end)
-        tabs.Powers:AddSection("Auto Powers")
         -- Player
         local close = tabs.Settings:AddParagraph({
             Title = "chat ONE LETTER on chat -> Gui will show/ hide",
