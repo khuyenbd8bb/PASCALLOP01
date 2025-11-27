@@ -1,4 +1,4 @@
-if  true then --123
+if  true then
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -246,11 +246,10 @@ local function kill(monster)
     local status = monster:FindFirstChild("Status")
     monster = monster:FindFirstChild("HumanoidRootPart")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = -5
-    local xy = 0
+    local safeHeight = -1
+    local xy = 1
     local targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)        
     hrp.CFrame = CFrame.new(targetPosition)
-    hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
     local stillTarget = false
     for _, target in pairs(targetMonsterList) do
         if not monster  then return end
@@ -283,7 +282,6 @@ local function kill(monster)
         end
         targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)   
         hrp.CFrame = CFrame.new(targetPosition)
-        hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
         if status:FindFirstChild("Dead") then alive = false end
         task.wait()
     end
