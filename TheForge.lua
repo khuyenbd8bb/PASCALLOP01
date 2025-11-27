@@ -577,7 +577,7 @@ do
         local CopyScriptPath = Instance.new("TextButton")
         CopyScriptPath.Name = ""
         CopyScriptPath.Parent = ScreenGui -- ⭐ MUST be parented to something visible
-        CopyScriptPath.BackgroundColor3 = Color3.new(0.000000, 0.000000, 0.000000) 
+        CopyScriptPath.BackgroundColor3 = Color3.new(0.000000, 0.000000, 0.000000)
         CopyScriptPath.Position = UDim2.new(0, -25, 0, 20)
         CopyScriptPath.Size = UDim2.new(0, 50, 0, 50)
         CopyScriptPath.ZIndex = 15
