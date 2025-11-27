@@ -71,6 +71,7 @@ local function getDistance(obj1, obj2)
 end
 -- FFARM MMine
 task.spawn(function()
+    teleSell()
     while true do
         if isMine then
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
