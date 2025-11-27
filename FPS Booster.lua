@@ -325,6 +325,9 @@ end
 warn(" FPS Booster!")
 
 game.DescendantAdded:Connect(function(value)
-    task.wait(20)       
-    pcall(CheckIfBad, value)
+    task.delay(20, function()
+        if value and value.Parent then
+            pcall(CheckIfBad, value)
+        end
+    end)
 end)
