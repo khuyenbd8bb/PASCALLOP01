@@ -1,4 +1,4 @@
-if  true then 
+if  true then -- hihihi
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -122,7 +122,9 @@ local function mine(rock)
             break;
         end
     end   
+    if not rock.Parent or not rock.Parent:FindFirstChild("infoFrame") then return end
     local hp = rock.Parent.infoFrame.Frame.rockHP
+    
     local alive = true
     local name = rock.Parent.Name
     local connection 
