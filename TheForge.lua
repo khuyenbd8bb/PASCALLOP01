@@ -1,4 +1,4 @@
-if  true then -- <=
+if  true then 
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -19,7 +19,8 @@ local humanoid = character:FindFirstChild("Humanoid")
 local hrp = character:FindFirstChild("HumanoidRootPart")
 
 
-local autoSellRarity = 0
+local autoSellRarity = 0; local isFixAutoSell = false;
+local canSellFix = true
 local isFarm = false; local isMine = false; 
 local isKill = false; local isSwing = false;
 local oreList = {} ; local nameOreList = {}; local targetOreList = {}
@@ -44,6 +45,14 @@ local function getPosition(obj1)
     else
         return nil
     end
+end
+local function teleSell()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Dialogue = ReplicatedStorage.Shared.Packages.Knit.Services.ProximityService.RF.Dialogue -- RemoteFunction 
+    local GreedyCey = workspace.Proximity["Greedy Cey"]
+    Dialogue:InvokeServer(
+        GreedyCey
+    )
 end
 local function getDistance(obj1, obj2)
     local pos1, pos2
@@ -113,11 +122,12 @@ local function resetRockList()
 end
 local function mine(rock)
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = -5
+    local safeHeight = -7
 
     local headPos = getPosition(rock)
-    local targetPosition = headPos + Vector3.new(1, hrpToFeet + safeHeight, 1)        
+    local targetPosition = headPos + Vector3.new(0, hrpToFeet + safeHeight, 0)        
     hrp.CFrame = CFrame.new(targetPosition)
+    hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(rock))
 
     local stillTarget = false
     for _, target in pairs(targetOreList) do
@@ -141,6 +151,7 @@ local function mine(rock)
     end)
     while isFarm and stillTarget and alive do
         hrp.CFrame = CFrame.new(targetPosition)
+        hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(rock))
         if not hrp then 
             task.wait()
             continue
@@ -189,6 +200,16 @@ local function checkOre()
             end
         end
     end
+    if isFixAutoSell then 
+        if not canSellFix then return end
+        teleSell() 
+        task.wait(3)
+        canSellFix = false
+        task.spawn(function()
+            task.wait(60 * 5)
+            canSellFix = true
+        end)
+    end
 end
 local function autoMine()
     while isFarm do
@@ -220,17 +241,16 @@ local function resetMonsterList()
     end
 end
 local function kill(monster)
-    warn("im here")
     local name = monster.Name
     name = string.gsub(name, "%d", "")
     local status = monster:FindFirstChild("Status")
     monster = monster:FindFirstChild("HumanoidRootPart")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = 0
-    local xy = 1
+    local safeHeight = -5
+    local xy = 0
     local targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)        
     hrp.CFrame = CFrame.new(targetPosition)
-    
+    hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
     local stillTarget = false
     for _, target in pairs(targetMonsterList) do
         if not monster  then return end
@@ -263,6 +283,7 @@ local function kill(monster)
         end
         targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)   
         hrp.CFrame = CFrame.new(targetPosition)
+        hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
         if status:FindFirstChild("Dead") then alive = false end
         task.wait()
     end
@@ -285,7 +306,9 @@ local function checkKill()
             for _, target in ipairs(targetMonsterList) do
                 if (target == name) then
                     local status = monster:FindFirstChild("Status")
-                    if status:FindFirstChild("Dead") then continue end
+                    if not status then continue end
+                    status = status:FindFirstChild("Dead")
+                    if status then continue end 
                     kill(monster)
                 end
             end
@@ -299,14 +322,6 @@ local function autoKill()
     end
 end
 -- SSell
-local function teleSell()
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Dialogue = ReplicatedStorage.Shared.Packages.Knit.Services.ProximityService.RF.Dialogue -- RemoteFunction 
-    local GreedyCey = workspace.Proximity["Greedy Cey"]
-    Dialogue:InvokeServer(
-        GreedyCey
-    )
-end
 local function scanOreChances()
     local results = {}
     for _, category in ipairs(OreFolder:GetChildren()) do
@@ -330,14 +345,12 @@ local function scanOreChances()
 end
 local chanceOreList = scanOreChances()
 task.spawn(function()
-    teleSell()
     local Ore = game:GetService("Players").LocalPlayer.PlayerGui.Forge.OreSelect.OresFrame.Frame.Background:GetChildren()
     while true do
     for _, ore in pairs(Ore) do
         if ore.Name and chanceOreList[ore.Name] and chanceOreList[ore.Name].Chance <= autoSellRarity then
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
             local RunCommand = ReplicatedStorage.Shared.Packages.Knit.Services.DialogueService.RF.RunCommand -- RemoteFunction 
-            warn("sell")
             RunCommand:InvokeServer(
                 "SellConfirm",
                 {
@@ -495,6 +508,10 @@ do
         if inputAutoSell.Value ~= "" then
             autoSellRarity = tonumber(inputAutoSell.Value)
         end
+    end)
+    local toogleAutoSellFix = tabs.Sell:AddToggle("toogleAutoSellFix", {Title = "Turn this on if you use auto Sell", Default = false})
+    toogleAutoSellFix:OnChanged(function()
+        isFixAutoSell = toogleAutoSellFix.Value
     end)
     -- TTeleport
     for _, npc1 in pairs(workspace.Proximity:GetChildren()) do
