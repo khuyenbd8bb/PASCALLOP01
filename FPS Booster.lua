@@ -326,13 +326,11 @@ warn(" FPS Booster!")
 
 local canRun = true
 
-game.DescendantAdded:Connect(function(value)
-    if not canRun then return end
-
-    canRun = false
-    task.delay(20, function()
-        canRun = true
-        pcall(CheckIfBad, value)
-    end)
-end)
+while true do
+    Descendants = game:GetDescendants()
+    for i, v in pairs(Descendants) do
+        pcall(CheckIfBad, v)
+    end
+    task.wait(20)
+end
 
