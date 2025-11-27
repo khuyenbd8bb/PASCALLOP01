@@ -1,1199 +1,330 @@
-_G.Key = "AnimeWeapons"
-local key = _G.Key
-local Access = "AnimeWeapons"
-
-if game.PlaceId == 79189799490564 and key == Access then
-local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Config-Library/main/Main.lua"))()
-local TextChatService = game:GetService("TextChatService")
-local HatchGui = game:GetService("Players").LocalPlayer.PlayerGui
-
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-local isAutoEquipPower = false
-local distance = 1000
-local waveGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Raid.wave.amount
-local roomGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Dungeon.room.amount
-local defGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Defense.wave.amount
-
-local waveRaid = 0;local waveDungeon = 0; local waveDef = 0;
-local targetWaveRaid = 500; local targetWaveDef = 500; local targetWaveDungeon = 500;
-
-local gachaZone
-local attackRangePart 
-local attackRange = 15
-
-local monsterList = {} ; local nameList = {}; local targetList = {}
-local dungeonList = {};   local raidList = {}; local defList = {}; 
-local targetDungeon = {}; local targetRaid = {}; local targetDef = {};
-local dungeonNumber = {}; local raidNumber = {}; local defNumber = {};
-local dungeonTime  =  {}; local raidTime  =  {}; local defTime = {};
-local powerList = {}; local tooglePower = {};
-
-
-local teleportBackMap = "None";
-local masteryAccessory = ""; local damageAccessory = ""
-local repeatTime = 1
-local locationList = {}; local locationNumber = {}; 
-local locationTargetList = {}
-
-local isTeleportFarm = false
-local isTeleportHatch = false
-
-local isHatch = false
-local inDungeon = false
-local isDungeon = false
-local keepRunning = false
-local isKilling = false
-local isRankUp = false
-local isFuse = false
-local currentTime = os.date("*t") -- Use os.date() not os.time()
-
--- Main
-
-local function maskName(name)
-    if #name <= 3 then
-        return name -- too short to mask
-    end
-    local first = string.sub(name, 1, 1)
-    local last2 = string.sub(name, -2)
-    local res = first.. "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*" .. last2
-    return res
-end
-local req = syn and syn.request or http and http.request or request
-local data = {
-    embeds = {{
-        title = maskName(player.Name).. " Executed your script!",
-    }}
+_G.Ignore = {}
+_G.Settings = {
+    Players = {
+        ["Ignore Me"] = true,
+        ["Ignore Others"] = true,
+        ["Ignore Tools"] = true
+    },
+    Meshes = {
+        NoMesh = false,
+        NoTexture = false,
+        Destroy = false
+    },
+    Images = {
+        Invisible = true,
+        Destroy = false
+    },
+    Explosions = {
+        Smaller = true,
+        Invisible = false,
+        Destroy = false
+    },
+    Particles = {
+        Invisible = true,
+        Destroy = false
+    },
+    TextLabels = {
+        LowerQuality = true,
+        Invisible = false,
+        Destroy = false
+    },
+    MeshParts = {
+        LowerQuality = true,
+        Invisible = false,
+        NoTexture = false,
+        NoMesh = false,
+        Destroy = false
+    },
+    Other = {
+        ["FPS Cap"] = 360,
+        ["No Camera Effects"] = true,
+        ["No Clothes"] = true,
+        ["Low Water Graphics"] = true,
+        ["No Shadows"] = true,
+        ["Low Rendering"] = true,
+        ["Low Quality Parts"] = true,
+        ["Low Quality Models"] = true,
+        ["Reset Materials"] = true,
+        ["Lower Quality MeshParts"] = true,
+        ClearNilInstances = false
+    }
 }
 
-req({
-    Url = Webhook,
-    Method = "POST",
-    Headers = {
-        ["Content-Type"] = "application/json"
-    },
-    Body = game:GetService("HttpService"):JSONEncode(data)
-})
-
-task.spawn(function()
-    local function activateBypass(func, ui, index)
-        while true do
-            debug.setupvalue(func, index, 100)
-            task.wait()
-        end
-    end
-    local targetFound = false
-    local function deepScan(func, path)
-            if not islclosure(func) then return end
-            local upvalues = debug.getupvalues(func)
-            local foundUI = nil
-            local foundNumIndex = nil
-            for i, v in pairs(upvalues) do
-                if typeof(v) == "Instance" and v.Name == "autoReconnect" then foundUI = v end
-                if type(v) == "number" then 
-                    foundNumIndex = i 
-                end
-            end
-            if foundUI and foundNumIndex then
-                if targetFound == false then
-                    targetFound = true
-                    activateBypass(func, foundUI, foundNumIndex)
-                end
-            end
-        end
-    for _, func in pairs(getgc()) do
-        if type(func) == "function" and islclosure(func) and not isexecutorclosure(func) then
-                local info = debug.getinfo(func)
-                if info.source and string.find(info.source, "AutoReconnect.c") then deepScan(func, "Main") end
-        end
-    end
-    local VirtualUser = game:GetService('VirtualUser')
-    game:GetService('Players').LocalPlayer.Idled:Connect(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end)
-end)
-
-local function setAutoAttack()
-    local args = {
-        "Settings",
-        {
-            "AutoAttack",
-            true
-        }
-    }
-    game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
+if _G.SendNotifications == nil then
+    _G.SendNotifications = true
 end
-setAutoAttack()
-
-task.spawn(function()
-    while true do
-        attackRangePart =  workspace:FindFirstChild("AttackRange")
-        if not attackRangePart  then 
-            setAutoAttack() 
-            task.wait(1)
-            continue
-        end
-        attackRangePart = attackRangePart:FindFirstChild("Part")
-        if not attackRangePart  then 
-            setAutoAttack() 
-            task.wait(1)
-            continue
-        end
-        attackRange = attackRangePart.Size.X/2
-        task.wait(10)
-    end
-end)
-
-
-task.spawn(function()
-    while true do
-        if #workspace.Zones:GetChildren() < 1 then   
-            task.wait(1)
-            continue
-        end
-        gachaZone = workspace.Zones:GetChildren()[1]
-        
-        gachaZone = gachaZone:FindFirstChild("Utility")
-        if not gachaZone then     
-            task.wait(1)
-            continue
-        end
-        
-        gachaZone = gachaZone:FindFirstChild("Gacha Machine")
-        if not gachaZone  then   
-            task.wait(1)
-            continue
-        end
-        
-        gachaZone = gachaZone:FindFirstChild("Circle")
-        if not gachaZone then
-            task.wait(1)
-            continue
-        end
-        task.wait(1)
-    end
-end)
-
-local function loadData()
-    local ok = true
-    if not isfolder("TigerHub") or not isfile("TigerHub/monsterList.json") then
-        makefolder("TigerHub")
-        writefile("TigerHub/monsterList.json", "[]") -- Changed from {} to [] for array
-        ok = false
-    end
-    
-    if not isfolder("TigerHub") or not isfile("TigerHub/locationList.json") then
-        makefolder("TigerHub")
-        writefile("TigerHub/locationList.json", "[]") -- Changed from {} to [] for array
-        ok = false
-    end
-    if not ok then return end
-    -- Read the file content first, then decode it
-    local monsterJsonContent = readfile("TigerHub/monsterList.json")
-    local monsterTable = Library.Decode(monsterJsonContent)
-    
-    nameList = monsterTable
-
-    monsterJsonContent = readfile("TigerHub/locationList.json")
-    monsterTable = Library.Decode(monsterJsonContent)
-    locationList = monsterTable
-
-    for i, locationObj in ipairs(monsterTable) do
-        -- Extract the number
-        table.insert(locationNumber, locationObj.number)
-        
-        -- Convert the pos string to Vector3
-        local posString = locationObj.pos
-        local x, y, z = posString:match("Vector3_%(([%d%.%-]+),%s*([%d%.%-]+),%s*([%d%.%-]+)%)")
-        
-        if x and y and z then
-            locationList[i] = {
-                number = locationObj.number,
-                pos = Vector3.new(tonumber(x), tonumber(y), tonumber(z))
-            }
-        end
-    end
-
+if _G.ConsoleLogs == nil then
+    _G.ConsoleLogs = false 
+end
+if _G.LoadedWait == nil then
+    _G.LoadedWait = 1 
 end
 
-
-
-local function FindHRP(player)
-    for _, zone in ipairs(workspace.Zones:GetChildren()) do
-        local chars = zone:FindFirstChild("Characters")
-        if chars then
-            local char = chars:FindFirstChild(player.Name)
-            if char then
-                return char:FindFirstChild("HumanoidRootPart")
-            end
-        end
-    end
-    return nil
+if not game:IsLoaded() then
+    repeat task.wait() until game:IsLoaded()
 end
 
-local function FindHumanoid(player)
-    for _, zone in ipairs(workspace.Zones:GetChildren()) do
-        local chars = zone:FindFirstChild("Characters")
-        if chars then
-            local char = chars:FindFirstChild(player.Name)
-            if char then
-                return char:FindFirstChild("Humanoid")
-            end
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local StarterGui = game:GetService("StarterGui")
+local MaterialService = game:GetService("MaterialService")
+local ME = Players.LocalPlayer
+local CanBeEnabled = {"ParticleEmitter", "Trail", "Smoke", "Fire", "Sparkles"}
+
+local function PartOfCharacter(Inst)
+    for i, v in pairs(Players:GetPlayers()) do
+        if v ~= ME and v.Character and Inst:IsDescendantOf(v.Character) then
+            return true
         end
     end
-    return nil
-end
-
-local hrp = FindHRP(player)
-local humanoid = FindHumanoid(player)
-
-player.CharacterAdded:Connect(function(character)
-    hrp = character:WaitForChild("HumanoidRootPart")
-    humanoid = character:WaitForChild("Humanoid")
-    print("Character updated!")
-end)
-
-roomGui:GetPropertyChangedSignal("Text"):Connect(function()
-    waveDungeon = tonumber((string.gsub(roomGui.Text, "Room: ", "")))
-end)
-
-waveGui:GetPropertyChangedSignal("Text"):Connect(function()
-    waveRaid = tonumber((string.gsub(waveGui.Text, "Room: ", "")))
-    if not waveRaid then
-        waveRaid = tonumber((string.gsub(waveGui.Text, "Wave: ", "")))
-    end
-end)
-
-defGui:GetPropertyChangedSignal("Text"):Connect(function()
-    waveDef = tonumber((string.gsub(defGui.Text, "Room: ", "")))
-    if not waveDef then
-        waveDef = tonumber((string.gsub(defGui.Text, "Wave: ", "")))
-    end
-end)
-
-
-local function getDistance(obj1, obj2)
-    local pos1, pos2
-    if obj1:IsA("Model") then
-        pos1 = obj1:GetPivot().Position
-    elseif obj1:IsA("BasePart") then
-        pos1 = obj1.Position
-    end
-
-    if obj2:IsA("Model") then
-        pos2 = obj2:GetPivot().Position
-    elseif obj2:IsA("BasePart") then
-        pos2 = obj2.Position
-    end
-    
-    return (pos1 - pos2).Magnitude
-end
-local function getPosition(obj1)
-    if obj1:IsA("Model") then
-        return obj1:GetPivot().Position
-    elseif obj1:IsA("BasePart") then
-        return obj1.Position
-    else
-        return nil
-    end
-end
---- FFarm1
-local function resetEnemiesList()
-    local monsters = workspace.Enemies:GetChildren()
-    local nameSet = {}           -- helper table for checking duplicates
-    table.clear(nameList)
-    table.clear(monsterList)
-
-    for _, monster in pairs(monsters) do
-        
-        if monster.Name == "" or not monster.Name then 
-            task.wait()
-            continue 
-        end
-        local nameText = monster.Name
-        
-        if monster.Head.Transparency ~= 0 then continue end
-        if getDistance(hrp, monster.HumanoidRootPart) >= distance then continue end
-
-        if not nameSet[nameText] then
-            table.insert(monsterList, nameText)
-            nameSet[nameText] = true
-            table.insert(nameList, nameText)
-        end
-    end
-
-end
-
-local function kill(monster)
-    local head = monster:FindFirstChild("Head")
-    local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = -2
-    --local alive = head.Transparency
-    if inDungeon then 
-        isKilling = false
-        return
-    end
-    local headPos = getPosition(head)
-    local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
-    hrp.CFrame = CFrame.new(targetPosition)
-
-    local stillTarget = false
-    for _, target in pairs(targetList) do
-        if not monster or not monster.Name then return end
-        if (target == monster.Name) then
-            stillTarget = true
-            break;
-        end
-    end   
-    local alive = true
-    local connection
-    connection = monster.ChildRemoved:Connect(function(child)
-        connection:Disconnect()
-        alive = false
-    end)
-    while keepRunning and stillTarget  and alive do
-        hrp.CFrame = CFrame.new(targetPosition)
-        if not hrp then 
-            task.wait()
-            continue
-        end
-        if getDistance(hrp, monster) > distance then 
-            return
-        end
-        stillTarget = false
-        if inDungeon then 
-            isKilling = false
-            return
-        end
-        for _, target in pairs(targetList) do
-            if not monster.Parent or not monster then return end
-            if monster.Name == "" then return end
-            if (target == monster.Name) then
-                stillTarget = true
-                break;
-            end
-        end
-        task.wait()
-    end
-end
-
-local function check()
-    local monsters = workspace.Enemies:GetChildren()
-    for _, monster in pairs(monsters) do
-        if not keepRunning then break end
-        if not monster:FindFirstChild("Head") then return end
-        local Head = monster.Head
-        if Head.Transparency ~= 0 then continue end
-        if not hrp then 
-            task.wait()
-            continue
-        end
-        local dis = getDistance(hrp, monster)
-        if dis >= distance or dis <= attackRange then continue end
-
-        if not monster then continue end
-        if monster.Name == "" or not monster.Name then 
-            task.wait()
-            continue
-        end
-        local nameText = monster.Name
-
-        for _, target in ipairs(targetList) do
-            if (target == nameText) then
-                isKilling = true
-                if inDungeon then 
-                    isKilling = false
-                    return
-                end
-                kill(monster)
-                isKilling = false
-                break
-            end
-        end
-    end
-end
-
-local function autoFarm()
-    while keepRunning do
-        if not isKilling and not inDungeon then
-            check()
-            task.wait()
-        end
-        task.wait()
-    end
-end
-
---DDungeon
-local dontTeleport = false
-task.spawn(function()
-    while true do
-        if #workspace.Zones:GetChildren() == 0 or dontTeleport then
-            task.wait(6)
-            continue
-        end
-        local Map = workspace.Zones:GetChildren()[1].Name
-        if (Map == teleportBackMap) then
-            task.wait(6)
-            continue
-        end
-        if inDungeon then 
-            task.wait(6)
-            continue
-        end
-        local args = {
-            "Zone Teleport",
-            {
-                teleportBackMap
-            }
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        warn("autoTele")
-        task.wait(6)
-    end
-end)
-
-local function teleportBack() 
-    warn("teleback")
-    local args = {
-        "Zone Teleport",
-        {
-            teleportBackMap
-        }
-    }
-    game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-    task.wait(6)
-end
-
-local function isPlayerInZone(zone)
-    local chars = zone:FindFirstChild("Characters")
-    if not chars then return false end
-    chars = chars:FindFirstChild(player.Name)
-    if not chars then return false end
-    return true
-end
-
-local function checkFolderDungeonZones()
-    local location = workspace.Zones:GetChildren()
-    if location[1] and string.find(location[1].Name, "Dungeon:") and isPlayerInZone(location[1]) then return true end
-    if #location ~= 1 and location[2] and string.find(location[2].Name, "Dungeon:") and isPlayerInZone(location[2]) then return true end
     return false
 end
 
-local function checkFolderRaidZones()
-    local location = workspace.Zones:GetChildren()
-    if location[1] and string.find(location[1].Name, "Raid:") and isPlayerInZone(location[1]) then return true end
-    if #location ~= 1 and location[2] and string.find(location[2].Name, "Raid:") and isPlayerInZone(location[2]) then return true end
+local function DescendantOfIgnore(Inst)
+    for i, v in pairs(_G.Ignore) do
+        if Inst:IsDescendantOf(v) then
+            return true
+        end
+    end
     return false
 end
 
-local function checkFolderDefZones()
-    local location = workspace.Zones:GetChildren()
-    if location[1] and string.find(location[1].Name, "Defense:") and isPlayerInZone(location[1]) then return true end
-    if #location ~= 1 and location[2] and string.find(location[2].Name, "Defense:") and isPlayerInZone(location[2]) then return true end
-    return false
-end
-local mode = "Mastery"
-local function autoEquipPower()
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
-    if mode  == "Mastery" then mode = "Damage" else mode = "Mastery" end
-    Reliable:FireServer(
-        "Vault Equip Best",
-        {
-            mode
-        }
-    )
-    task.wait(1)
-    local accessory = ""
-    if mode == "Mastery" then accessory = masteryAccessory else accessory = damageAccessory end
-    Reliable:FireServer(
-        "Accessory Equip",
-        {
-            accessory
-        }
-    )
-end
-
-task.spawn(function()
-    while true do
-        inDungeon = checkFolderDungeonZones()
-        if inDungeon == false then inDungeon = checkFolderRaidZones() end
-        if inDungeon == false then inDungeon = checkFolderDefZones() end
-        if (inDungeon and mode == "Damage") or (inDungeon == false and mode == "Mastery") or isAutoEquipPower == false then 
-            task.wait(0.1)
-        else 
-            autoEquipPower() 
-        end
-        task.wait(0.2)    
-    end 
-end)
-
-task.spawn(function()
-    table.insert(dungeonList, "Easy");   dungeonNumber["Easy"] =   1; dungeonTime["Easy"] = 0
-    table.insert(dungeonList, "Medium"); dungeonNumber["Medium"] = 2; dungeonTime["Medium"] = 20
-    table.insert(dungeonList, "Hard");   dungeonNumber["Hard"] =   3; dungeonTime["Hard"] = 40
-    
-    table.insert(raidList, "Shinobi");   raidNumber["Shinobi"] = 1; raidTime["Shinobi"] = 10
-
-    table.insert(defList, "Easy");  defNumber["Easy"] = 1;  defTime["Easy"] = 0
-end)
-
-
-
-local function killDungeon(monster)
-    if not monster then return end
-    local head = monster:FindFirstChild("Head")
-    if not head then return end
-    local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = -2
-
-    local headPos = getPosition(head)
-    local targetPosition = headPos + Vector3.new(0, hrpToFeet + safeHeight, -attackRange+5)        
-    hrp.CFrame = CFrame.new(targetPosition)
-    while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
-        if not hrp then 
-            task.wait()
-            continue
-        end
-        if getDistance(hrp, monster) > distance then 
-            return
-        end
-        hrp.CFrame = CFrame.new(targetPosition)
-        local newtargetPosition = getPosition(head) + Vector3.new(0, hrpToFeet + safeHeight, -attackRange+5)   
-        if (newtargetPosition - getPosition(head)).Magnitude >= attackRange - 1 then targetPosition = newtargetPosition end
-        task.wait()
-    end
-end
-
-local function checkDungeon() 
-    dontTeleport = true
-    while waveDungeon <= targetWaveDungeon and inDungeon and isDungeon and waveRaid <= targetWaveRaid and waveDef <= targetWaveDef do 
-        local monsters = workspace.Enemies:GetChildren()
-        if #monsters == 0 then continue end
-        for _, monster in pairs(monsters) do
-            local Head = monster:FindFirstChild("Head")
-            if not Head or Head.Transparency ~= 0 then continue end
-            if not hrp then 
-                task.wait()
-                continue
+local function CheckIfBad(Inst)
+    if not Inst:IsDescendantOf(Players) and 
+       (_G.Settings.Players["Ignore Others"] and not PartOfCharacter(Inst) or not _G.Settings.Players["Ignore Others"]) and 
+       (_G.Settings.Players["Ignore Me"] and ME.Character and not Inst:IsDescendantOf(ME.Character) or not _G.Settings.Players["Ignore Me"]) and 
+       (_G.Settings.Players["Ignore Tools"] and not Inst:IsA("BackpackItem") and not Inst:FindFirstAncestorWhichIsA("BackpackItem") or not _G.Settings.Players["Ignore Tools"]) and 
+       (_G.Ignore and not table.find(_G.Ignore, Inst) and not DescendantOfIgnore(Inst) or (not _G.Ignore or type(_G.Ignore) ~= "table" or #_G.Ignore <= 0)) then
+        
+        if Inst:IsA("DataModelMesh") then
+            if Inst:IsA("SpecialMesh") then
+                if _G.Settings.Meshes.NoMesh then
+                    Inst.MeshId = ""
+                end
+                if _G.Settings.Meshes.NoTexture then
+                    Inst.TextureId = ""
+                end
             end
-            local dis = getDistance(hrp, monster)
-            if dis >= distance or dis <= attackRange then continue end
-            killDungeon(monster)
-            task.wait()
-        end
-    task.wait()
-    end
-    if isDungeon and waveRaid > targetWaveRaid or waveDef > targetWaveDef then teleportBack() end
-    dontTeleport = false
-end
-
-local function joinDungeon()
-    if checkFolderDungeonZones() then
-        checkDungeon()
-        return
-    end
-    
-    if checkFolderRaidZones() then
-        checkDungeon()
-        return 
-    end
-
-    if checkFolderDefZones() then
-        checkDungeon()
-        return 
-    end
-    
-    local isTargetDungeon = false
-    local isTargetRaid = false
-    local isTargetDef = false
-    currentTime = os.date("*t")
-    for _, dungeon in pairs(targetDungeon) do
-        if dungeonTime[dungeon] == currentTime.min then 
-            isTargetDungeon = dungeon
-        end
-    end
-    for _, raid in pairs(targetRaid) do
-        if raidTime[raid] == currentTime.min or raidTime[raid] + 30 == currentTime.min then 
-            isTargetRaid = raid
-        end
-    end
-    for _, def in pairs(targetDef) do
-        if defTime[def] == currentTime.min or defTime[def] + 30 == currentTime.min then 
-            isTargetDef = def
-        end
-    end
-    if not isTargetDungeon and not isTargetRaid and not isTargetDef then return end
-    if isTargetDungeon then 
-        local number = dungeonNumber[isTargetDungeon]
-        local Dungeon = "Dungeon:".. tostring(number)
-        local args = {
-            "Join Gamemode",
-            {
-                Dungeon
-            }
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        checkDungeon()
-
-    elseif isTargetRaid then 
-        local number = raidNumber[isTargetRaid]
-        local Raid = "Raid:".. tostring(number)
-        local args = {
-            "Join Gamemode",
-            {
-                Raid
-            }
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        checkDungeon()
-    elseif  isTargetDef then 
-        local number = defNumber[isTargetDef]
-        local Def = "Defense:".. tostring(number)
-        local args = {
-            "Join Gamemode",
-            {
-                Def
-            }
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        checkDungeon()
-    end
-end
-local function autoFarmDungeon()
-    while (isDungeon) do
-        waveRaid = 0
-        waveDungeon = 0
-        waveDef = 0
-        joinDungeon()
-        task.wait(1)    
-    end
-end
--- SStronger
-local function autoFuse()
-    while isFuse do
-        local args = {
-        "Weapon Fuse All"
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-        task.wait(10)
-    end 
-end
-
-local function autoRankUp()
-    while isRankUp do
-        local args = {
-        "RankUp"
-    }
-    game:GetService("ReplicatedStorage"):WaitForChild("Reply"):WaitForChild("Reliable"):FireServer(unpack(args))
-    task.wait(10)
-    end 
-end
-
-local function autoHatch()
-    while isHatch do
-        if not gachaZone or typeof(gachaZone) ~= "Instance" or typeof(hrp) ~= "Instance" then 
-            task.wait() 
-            continue 
-        end
-        if getDistance(gachaZone, hrp) <= 8.5 and not HatchGui:FindFirstChild("CloseAutoOpen") then
-            local ReplicatedStorage = game:GetService("ReplicatedStorage")
-            local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
-            Reliable:FireServer(
-                "Gacha Auto"
-            )
-        end 
-        task.wait()
-    end
-end
-
--- LLocation 
-local function teleportTo(target)
-    for _, location in ipairs(locationList) do
-        if (location.number == target) then
-            
-            local Pos = location.pos
-            if (getPosition(hrp) - Pos).Magnitude  > distance then return end
-            
-            local targetPosition = Pos        
-            if inDungeon then return end 
-            hrp.CFrame = CFrame.new(targetPosition)
-            break
-        end
-    end
-    task.wait(repeatTime)
-end
-local function autoTeleportFarm()
-    while isTeleportFarm do
-        if inDungeon then 
-            task.wait()
-            continue 
-        end
-        for _, location in ipairs(locationTargetList) do
-            teleportTo(location)
-        end
-        if inDungeon == false and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
-            local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-            local safeHeight = 0
-            --local alive = head.Transparency
-            local headPos = getPosition(gachaZone)
-            local targetPosition = headPos + Vector3.new(3, hrpToFeet + safeHeight, 3)      
-            hrp.CFrame = CFrame.new(targetPosition)
-            task.wait(0.5)
-        end
-
-        task.wait()
-    end
-end
-local function addLocation()
-    local Position = hrp.Position
-    local size = #locationList
-    size = "Location #" .. tostring(size + 1)
-    table.insert(locationList, {number = size, pos = Position})
-end
--- PPower
-table.insert(powerList, {name = "Biju", auto = false})
-table.insert(powerList, {name = "MagicEyes", auto = false})
-table.insert(powerList, {name = "Race", auto = false})
-table.insert(powerList, {name = "Sayajin", auto = false})
-table.insert(powerList, {name = "Haki", auto = false})
-table.insert(powerList, {name = "Fruits", auto = false})
-table.insert(powerList, {name = "Breathing", auto = false})
-table.insert(powerList, {name = "DemonArt", auto = false})
-table.insert(powerList, {name = "Titan", auto = false})
-table.insert(powerList, {name = "Organization", auto = false})
-
-local function changePower(name, value)
-    for _, power in pairs(powerList) do
-        if power.name == name then 
-            power.auto = value
-            return
-        end
-    end
-end
-
-task.spawn(function()
-    while true do
-        for _, power in pairs(powerList) do
-            if power.auto == false then 
-                task.wait()
-                continue
+            if _G.Settings.Meshes.Destroy then
+                Inst:Destroy()
             end
-            local name = power.name
-            local ReplicatedStorage = game:GetService("ReplicatedStorage")
-            local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
-            Reliable:FireServer(
-                "Crate Roll Start",
-                {
-                    name,
-                    false
-                }
-            )
-            task.wait(0.4)
+        
+        elseif Inst:IsA("FaceInstance") then
+            if _G.Settings.Images.Invisible then
+                Inst.Transparency = 1
+                Inst.Shiny = 1
+            end
+            if _G.Settings.Images.Destroy then
+                Inst:Destroy()
+            end
+        
+        elseif Inst:IsA("ShirtGraphic") then
+            if _G.Settings.Images.Invisible then
+                Inst.Graphic = ""
+            end
+            if _G.Settings.Images.Destroy then
+                Inst:Destroy()
+            end
+        
+        elseif table.find(CanBeEnabled, Inst.ClassName) then
+            if _G.Settings.Particles and _G.Settings.Particles.Invisible then
+                Inst.Enabled = false
+            end
+            if _G.Settings.Particles and _G.Settings.Particles.Destroy then
+                Inst:Destroy()
+            end
+        
+        elseif Inst:IsA("PostEffect") and _G.Settings.Other and _G.Settings.Other["No Camera Effects"] then
+            Inst.Enabled = false
+        
+        elseif Inst:IsA("Explosion") then
+            if _G.Settings.Explosions and _G.Settings.Explosions.Smaller then
+                Inst.BlastPressure = 1
+                Inst.BlastRadius = 1
+            end
+            if _G.Settings.Explosions and _G.Settings.Explosions.Invisible then
+                Inst.BlastPressure = 1
+                Inst.BlastRadius = 1
+                Inst.Visible = false
+            end
+            if _G.Settings.Explosions and _G.Settings.Explosions.Destroy then
+                Inst:Destroy()
+            end
+        
+        elseif Inst:IsA("Clothing") or Inst:IsA("SurfaceAppearance") or Inst:IsA("BaseWrap") then
+            if _G.Settings.Other and _G.Settings.Other["No Clothes"] then
+                Inst:Destroy()
+            end
+        
+        elseif Inst:IsA("BasePart") and not Inst:IsA("MeshPart") then
+            if _G.Settings.Other and _G.Settings.Other["Low Quality Parts"] then
+                Inst.Material = Enum.Material.Plastic
+                Inst.Reflectance = 0
+            end
+        
+        elseif Inst:IsA("TextLabel") and Inst:IsDescendantOf(workspace) then
+            if _G.Settings.TextLabels and _G.Settings.TextLabels.LowerQuality then
+                Inst.Font = Enum.Font.SourceSans
+                Inst.TextScaled = false
+                Inst.RichText = false
+                Inst.TextSize = 14
+            end
+            if _G.Settings.TextLabels and _G.Settings.TextLabels.Invisible then
+                Inst.Visible = false
+            end
+            if _G.Settings.TextLabels and _G.Settings.TextLabels.Destroy then
+                Inst:Destroy()
+            end
+        
+        elseif Inst:IsA("Model") then
+            if _G.Settings.Other and _G.Settings.Other["Low Quality Models"] then
+                Inst.LevelOfDetail = Enum.ModelLevelOfDetail.StreamingMesh
+            end
+        
+        elseif Inst:IsA("MeshPart") then
+            if _G.Settings.MeshParts and _G.Settings.MeshParts.LowerQuality then
+                Inst.RenderFidelity = Enum.RenderFidelity.Performance
+                Inst.Reflectance = 0
+                Inst.Material = Enum.Material.Plastic
+            end
+            if _G.Settings.MeshParts and _G.Settings.MeshParts.Invisible then
+                Inst.Transparency = 1
+                Inst.RenderFidelity = Enum.RenderFidelity.Performance
+                Inst.Reflectance = 0
+                Inst.Material = Enum.Material.Plastic
+            end
+            if _G.Settings.MeshParts and _G.Settings.MeshParts.NoTexture then
+                Inst.TextureID = ""
+            end
+            if _G.Settings.MeshParts and _G.Settings.MeshParts.NoMesh then
+                Inst.MeshId = ""
+            end
+            if _G.Settings.MeshParts and _G.Settings.MeshParts.Destroy then
+                Inst:Destroy()
+            end
         end
-        task.wait()
     end
-end)
+end
 
--- GGUI
-    local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 3.1 | Accessory Equip Best",
-        TabWidth = 160,
-        Size = UDim2.fromOffset(580, 460),
-        Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-        Theme = "Darker",
-        MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+if _G.SendNotifications then
+    StarterGui:SetCore("SendNotification", {
+        Title = "FPS Booster",
+        Text = "Đang tải FPS Booster...",
+        Duration = 5,
+        Button1 = "OK"
     })
-
-    TextChatService.MessageReceived:Connect(function(message)
-        if not message or not message.TextSource then return end
-        if not (message.TextSource.Name == player.Name) then return end
-        if #message.Text == 1 then 
-            Window:Minimize()
-        end
-    end)
-    
-    local tabs = {
-        Main = Window:AddTab({ Title = "Farm", Icon = "swords" }),
-        Farm2 = Window:AddTab({ Title = "Location Farm", Icon = "swords" }),
-        Power = Window:AddTab({ Title = "Auto Powers", Icon = "flame" }),
-        Dungeon = Window:AddTab({ Title = "Dungeons/ Raids", Icon = "skull" }),
-        Stronger = Window:AddTab({ Title = "Auto Stronger", Icon = "flame" }),
-        Settings = Window:AddTab({ Title = "Player Config", Icon = "user-cog" })
-    }
-
-    local option1 = Fluent.Options
-    do
-        -- PPower
-        for _, power in pairs(powerList) do 
-            local name = power.name 
-            tooglePower[name] = tabs.Power:AddToggle("toggle"..name, {Title = "Auto "..name, Default = false, Description = "",})
-            tooglePower[name]:OnChanged(function()
-                changePower(name, tooglePower[name].Value)
-            end)
-            task.wait()
-        end
-        -- FFarm1
-        loadData()
-        local MultiDropdown = tabs.Main:AddDropdown("MultiDropdown", {
-            Title = "Select Enemies",
-            Description = "ONLY WORK WITH INSTANT KILL",
-            Values = {},
-            Multi = true,
-            Default = {},
-        })
-        MultiDropdown:OnChanged(function(selectedValues)
-            table.clear(targetList)
-
-            for name, state in pairs(selectedValues) do
-                if state then
-                    table.insert(targetList, name)
-                end
-            end        
-        end)
-
-        local resetButton = tabs.Main:AddButton({
-            Title = "Reset Enemies",
-            Description = "Always Reset Enemies after change map",
-            Callback = function() 
-                MultiDropdown:SetValue({})
-                resetEnemiesList() 
-                MultiDropdown:SetValues(nameList)
-                Library:SaveConfig("TigerHub/monsterList.json", nameList)
-            end
-        })
-        MultiDropdown:SetValues(nameList)
-
-        
-        local toogleFarm = tabs.Main:AddToggle("toogleFarm", {Title = "Auto Farm Selected Enemies", Default = false})
-        toogleFarm:OnChanged(function()
-            keepRunning = toogleFarm.Value
-            isKilling = false
-            if (toogleFarm.Value) then
-                task.spawn(function() 
-                    autoFarm()
-                end)
-            end
-        end)
-        -- LLocation FFarm
-        local locationDropdown = tabs.Farm2:AddDropdown("locationDropdown", {
-            Title = "Location Selection",
-            Description = "Select Location to teleport",
-            Values = {},
-            Multi = true,
-            Default = {},
-        })
-        
-        locationDropdown:OnChanged(function(selectedValues)
-            table.clear(locationTargetList)
-
-            for number, state in pairs(selectedValues) do
-                if state then
-                    table.insert(locationTargetList, number)
-                end
-            end
-        end)
-
-        
-        local addLocation = tabs.Farm2:AddButton({
-            Title = "Add Location to dropdown",
-            Description = "your currently position",
-            Callback = function() 
-                addLocation()
-                locationDropdown:SetValue({})
-                local list = {}
-                for _, location in ipairs(locationList) do
-                    table.insert(list, location.number)
-                end
-                locationDropdown:SetValues(list)
-                Library:SaveConfig("TigerHub/locationList.json", locationList)
-            end
-        })
-
-        locationDropdown:SetValues(locationNumber)
-        
-        local toogleTeleport = tabs.Farm2:AddToggle("toogleTeleport", {Title = "Auto Teleport accross all ur location", Default = false})
-        toogleTeleport:OnChanged(function()
-            isTeleportFarm = toogleTeleport.Value
-            if (isTeleportFarm) then
-                task.spawn(function() 
-                    autoTeleportFarm()
-                end)
-            end
-        end)
-        
-        local teleportSpeed = tabs.Farm2:AddInput("Input", {
-            Title = "Teleport Delay (Seconds)",
-            Default = 2,
-            Placeholder = "Placeholder",
-            Numeric = true, -- Only allows numbers
-            Finished = false, -- Only calls callback when you press enter
-            Callback = function(Value)
-            end
-        })
-
-        teleportSpeed:OnChanged(function()
-            if teleportSpeed.Value == nil or teleportSpeed.Value == "" then
-                repeatTime = 1 else
-                repeatTime = math.max(teleportSpeed.Value, 0.3)
-            end
-        end)
-
-        local clearLocation = tabs.Farm2:AddButton({
-            Title = "Clear all location",
-            Description = "W Farm",
-            Callback = function() 
-                locationDropdown:SetValues({})
-                table.clear(locationList)
-            end
-        })
-
-        local toogleLocationHatch = tabs.Farm2:AddToggle("toogleLocationHatch", {Title = "Location Gacha", Default = false, Description = "Req(Auto Gacha + Location farm)",})
-        toogleLocationHatch:OnChanged(function()
-            isTeleportHatch = toogleLocationHatch.Value
-        end)
-        --DDungeon
-        local dropdownDungeon = tabs.Dungeon:AddDropdown("dropdownDungeon", {
-            Title = "Dungeons",
-            Description = "Select Dungeon to auto farm",
-            Values = {},
-            Multi = true,
-            Default = {},
-        })
-        dropdownDungeon:SetValues(dungeonList)
-
-        dropdownDungeon:OnChanged(function(selectedValues)
-            table.clear(targetDungeon)
-
-            for name, state in pairs(selectedValues) do
-                if state then
-                    table.insert(targetDungeon, name)
-                end
-            end
-        end)
-
-        local dropdownRaid = tabs.Dungeon:AddDropdown("dropdownRaid", {
-            Title = "Raids",
-            Description = "Select Raids to auto farm",
-            Values = {},
-            Multi = true,
-            Default = {},
-        })
-        dropdownRaid:SetValues(raidList)
-
-        dropdownRaid:OnChanged(function(selectedValues)
-            table.clear(targetRaid)
-
-            for name, state in pairs(selectedValues) do
-                if state then
-                    table.insert(targetRaid, name)
-                end
-            end
-        end)
-
-        local dropdownDef = tabs.Dungeon:AddDropdown("dropdownDef", {
-            Title = "Defense",
-            Description = "Select Defense Mode to auto farm",
-            Values = {},
-            Multi = true,
-            Default = {},
-        })
-        dropdownDef:SetValues(defList)
-
-        dropdownDef:OnChanged(function(selectedValues)
-            table.clear(targetDef)
-
-            for name, state in pairs(selectedValues) do
-                if state then
-                    table.insert(targetDef, name)
-                end
-            end
-        end)
-
-        local toogleFarmDungeon = tabs.Dungeon:AddToggle("toogleFarmDungeon", {Title = "Auto Farm Dungeons/ Raids", Default = false})
-        toogleFarmDungeon:OnChanged(function()
-            isDungeon = toogleFarmDungeon.Value
-            if isDungeon then 
-                
-                autoFarmDungeon()
-            end
-        end)
-
-        local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
-            Title = "Auto Teleport to Map",
-            Description = "IF NOT IN DUNGEON OR RAID",
-            Values = {"None", "Naruto","DragonBall", "OnePiece", "DemonSlayer", "Paradis"},
-            Multi = false,
-            Default = "None",
-        })
-        
-        teleportBackDropdown:OnChanged(function(selectedValues)
-            teleportBackMap = selectedValues
-        end)
-
-        local inputTargetWaveRaid = tabs.Dungeon:AddInput("inputTargetWaveRaid", {
-            Title = "Target Wave (Raid)",
-            Description = "Leave after this wave",
-            Default = 500,
-            Placeholder = "Placeholder",
-            Numeric = true, -- Only allows numbers
-            Finished = true, -- Only calls callback when you press enter
-            Callback = function(Value)
-            end
-        })
-        inputTargetWaveRaid:OnChanged(function()
-            if inputTargetWaveRaid.Value == nil or not inputTargetWaveRaid.Value then
-                targetWaveRaid = 100 else
-                targetWaveRaid = tonumber(inputTargetWaveRaid.Value)
-            end
-        end)
-
-        local inputTargetWaveDef = tabs.Dungeon:AddInput("inputTargetWaveDef", {
-            Title = "Target Wave (Defense)",
-            Description = "Leave after this wave",
-            Default = 500,
-            Placeholder = "Placeholder",
-            Numeric = true, -- Only allows numbers
-            Finished = true, -- Only calls callback when you press enter
-            Callback = function(Value)
-            end
-        })
-        inputTargetWaveDef:OnChanged(function()
-            if inputTargetWaveDef.Value == nil or not inputTargetWaveDef.Value then
-                targetWaveDef = 100 else
-                targetWaveDef = tonumber(inputTargetWaveDef.Value)
-            end
-        end)
-        local SectionD = tabs.Dungeon:AddSection("Auto change power/ Accessory in gamemode")
-        local inputDamageAccessory = tabs.Dungeon:AddInput("inputDamageAccessory", {
-            Title = "in GameMode Accessory Name",
-            Description = "Remove Space/blank",
-            Default = "WildHead",
-            Placeholder = "Remove Space/blank",
-            Numeric = false, -- Only allows numbers
-            Finished = true, -- Only calls callback when you press enter
-            Callback = function(Value)
-            end
-        })
-        inputDamageAccessory:OnChanged(function()
-            damageAccessory = inputDamageAccessory.Value
-        end)
-        local inputMasteryAccessory = tabs.Dungeon:AddInput("inputMasteryAccessory", {
-            Title = "out GameMode Accessory Name",
-            Description = "Remove Space/blank",
-            Default = "EletricDrums",
-            Placeholder = "Remove Space/blank",
-            Numeric = false, -- Only allows numbers
-            Finished = true, -- Only calls callback when you press enter
-            Callback = function(Value)
-            end
-        })
-        inputMasteryAccessory:OnChanged(function()
-            masteryAccessory = inputMasteryAccessory.Value
-        end)
-
-        local toogleAutoEquipPower = tabs.Dungeon:AddToggle("toogleAutoEquipPower", {Title = "Auto Equip Best Damge in GameMode", Default = false, Description = "Will switch back to Mastery after gamemode"})
-        toogleAutoEquipPower:OnChanged(function()
-            isAutoEquipPower = toogleAutoEquipPower.Value
-        end)
-
-        -- SStronger
-        local toogleFuse = tabs.Stronger:AddToggle("toogleFuse", {Title = "Auto Fuse Weapons", Default = false})
-        toogleFuse:OnChanged(function()
-            isFuse = toogleFuse.Value
-            autoFuse()
-        end)
-        local toggleRank = tabs.Stronger:AddToggle("toggleRank", {Title = "Auto RankUp", Default = false})
-        toggleRank:OnChanged(function()
-            isRankUp = option1.toggleRank.Value
-            task.spawn(function() autoRankUp() end)
-        end)
-        local toggleHatch = tabs.Stronger:AddToggle("toggleHatch", {Title = "Auto Gacha(nearby)", Default = false})
-        toggleHatch:OnChanged(function()
-            isHatch = option1.toggleHatch.Value
-            task.spawn(function() autoHatch() end)
-        end)
-        -- Player
-        local close = tabs.Settings:AddParagraph({
-            Title = "chat ONE LETTER on chat -> Gui will show/ hide",
-            Content = "Click LeftControl To Hide/ Show Hub"
-        })
-
-        local fpsBoost =  tabs.Settings:AddToggle("fpsBoost", {Title = "Reduce Lag/ FPS Boost", Default = false})
-        fpsBoost:OnChanged(function()
-            if fpsBoost.Value then
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/khuyenbd8bb/RobloxKaitun/refs/heads/main/FPS%20Booster.lua"))()
-            end
-        end)
-
-        function Parent(GUI)
-            if syn and syn.protect_gui then
-                syn.protect_gui(GUI)
-                GUI.Parent = game:GetService("CoreGui")
-            elseif PROTOSMASHER_LOADED then
-                GUI.Parent = get_hidden_gui()
-            else
-                GUI.Parent = game:GetService("CoreGui")
-            end
-        end
-
-        local ScreenGui = Instance.new("ScreenGui")
-        Parent(ScreenGui)
-
-        local CopyScriptPath = Instance.new("TextButton")
-        CopyScriptPath.Name = ""
-        CopyScriptPath.Parent = ScreenGui -- ⭐ MUST be parented to something visible
-        CopyScriptPath.BackgroundColor3 = Color3.new(0.000000, 0.000000, 0.000000)
-        CopyScriptPath.Position = UDim2.new(0, -25, 0, 20)
-        CopyScriptPath.Size = UDim2.new(0, 50, 0, 50)
-        CopyScriptPath.ZIndex = 15
-        CopyScriptPath.Font = Enum.Font.SourceSans
-        CopyScriptPath.Text = ""
-        CopyScriptPath.TextColor3 = Color3.fromRGB(250, 251, 255)
-        CopyScriptPath.TextSize = 16
-        CopyScriptPath.BorderSizePixel = 2
-        CopyScriptPath.BorderColor3 = Color3.new(1.000000, 1.000000, 1.000000)
-
-        CopyScriptPath.MouseButton1Click:Connect(function()
-            Window:Minimize()
-        end)
-
-        SaveManager:SetLibrary(Fluent)
-        InterfaceManager:SetLibrary(Fluent)
-
-        -- Ignore keys that are used by ThemeManager.
-        -- (we dont want configs to save themes, do we?)
-        SaveManager:IgnoreThemeSettings()
-
-        -- You can add indexes of elements the save manager should ignore
-        SaveManager:SetIgnoreIndexes({})
-
-        -- use case for doing it this way:
-        -- a script hub could have themes in a global folder
-        -- and game configs in a separate folder per game
-        InterfaceManager:SetFolder("TigerHubConfig")
-        SaveManager:SetFolder("TigerHubConfig/AnimeWeapons")
-
-        InterfaceManager:BuildInterfaceSection(tabs.Settings)
-        SaveManager:BuildConfigSection(tabs.Settings)
-
-
-        Window:SelectTab(1)
-
-        -- You can use the SaveManager:LoadAutoloadConfig() to load a config
-        -- which has been marked to be one that auto loads!
-        SaveManager:LoadAutoloadConfig()
-        tabs.Settings:AddSection("Only work with lastest config")
-    end
-    
 end
 
+coroutine.wrap(pcall)(function()
+    if _G.Settings.Other and _G.Settings.Other["Low Water Graphics"] then
+        local terrain = workspace:FindFirstChildOfClass("Terrain")
+        if not terrain then
+            repeat task.wait() until workspace:FindFirstChildOfClass("Terrain")
+            terrain = workspace:FindFirstChildOfClass("Terrain")
+        end
+        terrain.WaterWaveSize = 0
+        terrain.WaterWaveSpeed = 0
+        terrain.WaterReflectance = 0
+        terrain.WaterTransparency = 0
+        if sethiddenproperty then
+            sethiddenproperty(terrain, "Decoration", false)
+        end
+        if _G.ConsoleLogs then
+            warn("✓ Đã tối ưu đồ họa nước")
+        end
+    end
+end)
 
+coroutine.wrap(pcall)(function()
+    if _G.Settings.Other and _G.Settings.Other["No Shadows"] then
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 9e9
+        Lighting.ShadowSoftness = 0
+        if sethiddenproperty then
+            sethiddenproperty(Lighting, "Technology", 2)
+        end
+        if _G.ConsoleLogs then
+            warn("✓ Đã tắt bóng đổ")
+        end
+    end
+end)
 
---part.CanCollide = false -- Players can walk through
+coroutine.wrap(pcall)(function()
+    if _G.Settings.Other and _G.Settings.Other["Low Rendering"] then
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+        settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level04
+        if _G.ConsoleLogs then
+            warn("✓ Đã giảm chất lượng rendering")
+        end
+    end
+end)
+
+coroutine.wrap(pcall)(function()
+    if _G.Settings.Other and _G.Settings.Other["Reset Materials"] then
+        for i, v in pairs(MaterialService:GetChildren()) do
+            v:Destroy()
+        end
+        MaterialService.Use2022Materials = false
+        if _G.ConsoleLogs then
+            warn("✓ Đã reset materials")
+        end
+    end
+end)
+
+coroutine.wrap(pcall)(function()
+    if _G.Settings.Other and _G.Settings.Other["FPS Cap"] then
+        if setfpscap then
+            local fpsCap = _G.Settings.Other["FPS Cap"]
+            if type(fpsCap) == "number" then
+                setfpscap(fpsCap)
+                if _G.ConsoleLogs then
+                    warn("✓ FPS giới hạn: " .. fpsCap)
+                end
+            elseif fpsCap == true then
+                setfpscap(1000000)
+                if _G.ConsoleLogs then
+                    warn("✓ Đã bỏ giới hạn FPS")
+                end
+            end
+        else
+            warn("✗ Executor không hỗ trợ setfpscap")
+        end
+    end
+end)
+
+coroutine.wrap(pcall)(function()
+    if _G.Settings.Other and _G.Settings.Other["ClearNilInstances"] then
+        if getnilinstances then
+            for _, v in pairs(getnilinstances()) do
+                pcall(v.Destroy, v)
+            end
+            if _G.ConsoleLogs then
+                warn("✓ Đã xóa nil instances")
+            end
+        end
+    end
+end)
+
+local Descendants = game:GetDescendants()
+if _G.ConsoleLogs then
+    warn("Đang kiểm tra " .. #Descendants .. " instances...")
+end
+
+for i, v in pairs(Descendants) do
+    pcall(CheckIfBad, v)
+end
+
+if _G.SendNotifications then
+    StarterGui:SetCore("SendNotification", {
+        Title = "FPS Booster",
+        Text = "✓ FPS Booster !",
+        Duration = 10,
+        Button1 = "OK"
+    })
+end
+warn(" FPS Booster!")
+
+game.DescendantAdded:Connect(function(value)
+    task.wait(20)
+    pcall(CheckIfBad, value)
+end)
