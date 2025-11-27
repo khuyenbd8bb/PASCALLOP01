@@ -594,7 +594,7 @@ do
 
         SaveManager:SetLibrary(Fluent)
         InterfaceManager:SetLibrary(Fluent)
- 
+
         -- Ignore keys that are used by ThemeManager.
         -- (we dont want configs to save themes, do we?)
         SaveManager:IgnoreThemeSettings()
