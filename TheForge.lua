@@ -1,13 +1,14 @@
-if true then 
+if  true then 
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Config-Library/main/Main.lua"))()
 local TextChatService = game:GetService("TextChatService")
-
 local distance = 10000
 local playerSpeed = 30
+local goodNPC = {}; local allNPC = {}; buttonNPC = {}
+
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -15,10 +16,17 @@ local character = player.Character
 local humanoid = character:FindFirstChild("Humanoid")
 local hrp = character:FindFirstChild("HumanoidRootPart")
 
-local isFarm = false; local isMine = false
-local monsterList = {} ; local nameList = {}; local targetList = {}
+local isFarm = false; local isMine = false; 
+local isKill = false; local isSwing = false;
+local oreList = {} ; local nameOreList = {}; local targetOreList = {}
+local monsterList = {} ; local nameMonsterList = {}; local targetMonsterList = {}
 
 -- MAIN
+
+table.insert(goodNPC, "Runemaker"); table.insert(goodNPC, "Enhancer");
+table.insert(goodNPC, "Miner Fred"); table.insert(goodNPC, "Sensei Moro");
+table.insert(goodNPC, "Greedy Cey");
+
 player.CharacterAdded:Connect(function(character)
     hrp = character:WaitForChild("HumanoidRootPart")
     humanoid = character:WaitForChild("Humanoid")
@@ -57,6 +65,13 @@ task.spawn(function()
                 "Pickaxe"
             )
         end
+        if isSwing then
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local ToolActivated = ReplicatedStorage.Shared.Packages.Knit.Services.ToolService.RF.ToolActivated -- RemoteFunction 
+            ToolActivated:InvokeServer(
+                "Weapon"
+            )
+        end
         task.wait(0.1)
     end
 end)
@@ -74,8 +89,8 @@ end
 local function resetRockList()
     local Rock = getAllDescendants(workspace.Rocks)
     local nameSet = {}           -- helper table for checking duplicates
-    table.clear(nameList)
-    table.clear(monsterList)
+    table.clear(nameOreList)
+    table.clear(oreList)
 
     for _, rock in pairs(Rock) do
         if rock.Name == "Hitbox" then
@@ -84,23 +99,23 @@ local function resetRockList()
             if getDistance(hrp, hitbox) >= distance then continue end
             
             if not nameSet[nameText] then
-                table.insert(monsterList, nameText)
+                table.insert(oreList, nameText)
                 nameSet[nameText] = true
-                table.insert(nameList, nameText)
+                table.insert(nameOreList, nameText)
             end
         end
     end
 end
 local function mine(rock)
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = -2
+    local safeHeight = -5
 
     local headPos = getPosition(rock)
     local targetPosition = headPos + Vector3.new(1, hrpToFeet + safeHeight, 1)        
     hrp.CFrame = CFrame.new(targetPosition)
 
     local stillTarget = false
-    for _, target in pairs(targetList) do
+    for _, target in pairs(targetOreList) do
         if not rock  then return end
         if (target == rock.Parent.Name) then
             stillTarget = true
@@ -127,7 +142,7 @@ local function mine(rock)
             return
         end
         stillTarget = false
-        for _, target in pairs(targetList) do
+        for _, target in pairs(targetOreList) do
             if not rock.Parent or not rock then return end
             if (target == name) then
                 stillTarget = true
@@ -137,7 +152,7 @@ local function mine(rock)
         task.wait()
     end
 end
-local function check()
+local function checkOre()
     local Rock = getAllDescendants(workspace.Rocks)
     for _, rock in pairs(Rock) do
         if rock.Name == "Hitbox" then
@@ -159,22 +174,132 @@ local function check()
             local dis = getDistance(hrp, rock)
             if dis >= distance then continue end
 
-            for _, target in ipairs(targetList) do
+            for _, target in ipairs(targetOreList) do
                 if (target == name) then
                     mine(rock)
                 end
             end
         end
     end
-    warn("ended")
 end
-local function autoFarm()
+local function autoMine()
     while isFarm do
-        check()
+        checkOre()
         task.wait()
     end
 end
+-- KKill
+local function resetMonsterList()
+    local Monster = workspace.Living:GetChildren()
+    local nameSet = {}           -- helper table for checking duplicates
+    table.clear(nameMonsterList)
+    table.clear(monsterList)
 
+    for _, monster in pairs(Monster) do
+        if not Players:FindFirstChild(monster.Name) then
+            local nameText = monster.Name
+            nameText = string.gsub(nameText, "%d", "")
+            monster = monster:FindFirstChild("HumanoidRootPart")
+            
+            if getDistance(hrp, monster) >= distance then continue end
+            
+            if not nameSet[nameText] then
+                table.insert(monsterList, nameText)
+                nameSet[nameText] = true
+                table.insert(nameMonsterList, nameText)
+            end
+        end
+    end
+end
+local function kill(monster)
+    warn("im here")
+    local name = monster.Name
+    name = string.gsub(name, "%d", "")
+    local status = monster:FindFirstChild("Status")
+    monster = monster:FindFirstChild("HumanoidRootPart")
+    local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
+    local safeHeight = 0
+    local xy = 1
+    local targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)        
+    hrp.CFrame = CFrame.new(targetPosition)
+    
+    local stillTarget = false
+    for _, target in pairs(targetMonsterList) do
+        if not monster  then return end
+        if (target == name ) then
+            stillTarget = true
+            break;
+        end
+    end   
+    
+    local alive = true
+    
+    
+    if not status then return end
+    while isKill and stillTarget and alive and monster and monster.Parent do
+        hrp.CFrame = CFrame.new(targetPosition)
+        if not hrp then 
+            task.wait()
+            continue
+        end
+        if getDistance(hrp, monster) > distance then 
+            return
+        end
+        stillTarget = false
+        for _, target in pairs(targetMonsterList) do
+            if not monster then return end
+            if (target == name) then
+                stillTarget = true
+                break;
+            end
+        end
+        targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)   
+        hrp.CFrame = CFrame.new(targetPosition)
+        if status:FindFirstChild("Dead") then alive = false end
+        task.wait()
+    end
+end
+local function checkKill()
+    local Monster = workspace.Living:GetChildren()
+    for _, monster in pairs(Monster) do
+        if not Players:FindFirstChild(monster.Name) then
+            local hitBox = monster:FindFirstChild("HumanoidRootPart")
+            if not monster or not hitBox then continue end
+            local name = monster.Name
+            name = string.gsub(name, "%d", "")
+            if not hrp or not name then 
+                task.wait()
+                continue
+            end
+            local dis = getDistance(hrp, hitBox)
+            if dis >= distance then continue end
+
+            for _, target in ipairs(targetMonsterList) do
+                if (target == name) then
+                    local status = monster:FindFirstChild("Status")
+                    if status:FindFirstChild("Dead") then continue end
+                    kill(monster)
+                end
+            end
+        end
+    end
+end
+local function autoKill()
+    while isKill do
+        checkKill()
+        task.wait()
+    end
+end
+-- TTeleport
+local function teleportToNPC(npcTarget)
+    for _, npc1 in pairs(workspace.Proximity:GetChildren()) do
+        if (npc1.Name == npcTarget) then
+            local addHeight = 2
+            local targetPosition = getPosition(npc1) + Vector3.new(0, 2 , 0)        
+            hrp.CFrame = CFrame.new(targetPosition)
+        end
+    end
+end
 --MMore
 task.spawn(function()
     while true do
@@ -194,7 +319,7 @@ local function teleSell()
     )
 end
 local Window = Fluent:CreateWindow({
-    Title = "Tiger HUB | Anime Weapons | Version: 3.0 | Power Pannel",
+    Title = "Tiger HUB | The Forge | Version: 1.1 | Auto Kill Monsters/ Teleport to all NPC",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -203,65 +328,135 @@ local Window = Fluent:CreateWindow({
 })
 
 local tabs = {
-        Farm = Window:AddTab({ Title = "Farm", Icon = "swords" }),
+        Mine = Window:AddTab({ Title = "Mining", Icon = "swords" }),
+        Kill = Window:AddTab({ Title = "Killing", Icon = "swords" }),
+        Teleport = Window:AddTab({ Title = "Teleport", Icon = "swords" }),
         More = Window:AddTab({ Title = "Mores", Icon = "user-cog" }),
         Settings = Window:AddTab({ Title = "Player Config", Icon = "user-cog" })
     }
     
 local option1 = Fluent.Options
 do
-    
-    local MultiDropdown = tabs.Farm:AddDropdown("MultiDropdown", {
-        Title = "Select Enemies",
-        Description = "ONLY WORK WITH INSTANT KILL",
+    -- MMine
+    local MultiDropdownOre = tabs.Mine:AddDropdown("MultiDropdownOre", {
+        Title = "Select Ores",
+        Description = "",
         Values = {},
         Multi = true,
         Default = {},
     })
-    MultiDropdown:OnChanged(function(selectedValues)
-        table.clear(targetList)
+    MultiDropdownOre:OnChanged(function(selectedValues)
+        table.clear(targetOreList)
 
         for name, state in pairs(selectedValues) do
             if state then
-                table.insert(targetList, name)
+                table.insert(targetOreList, name)
             end
         end        
     end)
 
-    local resetButton = tabs.Farm:AddButton({
+    local resetButton = tabs.Mine:AddButton({
         Title = "Reset Rocks List",
         Description = "",
         Callback = function() 
-            MultiDropdown:SetValue({})
+            MultiDropdownOre:SetValue({})
             resetRockList() 
-            MultiDropdown:SetValues(nameList)
-            for _, p in pairs(nameList) do
-                warn(p)
-            end
-            Library:SaveConfig("TigerHubForge/monsterList.json", nameList)
+            MultiDropdownOre:SetValues(nameOreList)
+            Library:SaveConfig("TigerHubForge/oreList.json", nameOreList)
         end
     })
-    MultiDropdown:SetValues(nameList)
+    MultiDropdownOre:SetValues(nameOreList)
 
-    
-    local toogleFarm = tabs.Farm:AddToggle("toogleFarm", {Title = "Auto Farm Selected Rock", Default = false})
+    local toogleFarm = tabs.Mine:AddToggle("toogleFarm", {Title = "Auto TP to Selected Rock", Default = false})
     toogleFarm:OnChanged(function()
         isFarm = toogleFarm.Value
         if (toogleFarm.Value) then
             task.spawn(function() 
-                autoFarm()
+                autoMine()
             end)
         end
     end)
-    local toogleMine = tabs.Farm:AddToggle("toogleFarm", {Title = "Auto Mining", Default = false})
+    local toogleMine = tabs.Mine:AddToggle("toogleFarm", {Title = "Auto Mining", Default = false})
     toogleMine:OnChanged(function()
         isMine = toogleMine.Value
-        if (toogleMine.Value) then
+    end)
+    -- KKill
+    local MultiDropdownMonster = tabs.Kill:AddDropdown("MultiDropdownMonster", {
+        Title = "Select Monster",
+        Description = "",
+        Values = {},
+        Multi = true,
+        Default = {},
+    })
+    MultiDropdownMonster:OnChanged(function(selectedValues)
+        table.clear(targetMonsterList)
+
+        for name, state in pairs(selectedValues) do
+            if state then
+                table.insert(targetMonsterList, name)
+            end
+        end        
+    end)
+
+    local resetButton = tabs.Kill:AddButton({
+        Title = "Reset Monster List",
+        Description = "",
+        Callback = function() 
+            MultiDropdownMonster:SetValue({})
+            resetMonsterList() 
+            MultiDropdownMonster:SetValues(nameMonsterList)
+            Library:SaveConfig("TigerHubForge/monsterList.json", nameMonsterList)
+        end
+    })
+    MultiDropdownMonster:SetValues(nameMonsterList)
+
+    
+    local toogleKill = tabs.Kill:AddToggle("toogleKill", {Title = "Auto TP to Selected Monster", Default = false})
+    toogleKill:OnChanged(function()
+        isKill = toogleKill.Value
+        if (toogleKill.Value) then
             task.spawn(function() 
-                autoFarm()
+                autoKill()
             end)
         end
     end)
+    local toogleSwing = tabs.Kill:AddToggle("toogleSwing", {Title = "Auto Swing", Default = false})
+    toogleSwing:OnChanged(function()
+        isSwing = toogleSwing.Value
+    end)
+    -- TTeleport
+    for _, npc1 in pairs(workspace.Proximity:GetChildren()) do
+        for _, npc2 in pairs(goodNPC) do
+            if string.find(npc1.Name, npc2) then
+                buttonNPC[npc1.Name] = tabs.Teleport:AddButton({
+                    Title = npc1.Name,
+                    Description = "",
+                    Callback = function() 
+                        teleportToNPC(npc1.Name)
+                    end
+                })
+            end
+        end
+    end
+    local sectiontp = tabs.Teleport:AddSection("ALL NPC on MAP")
+    for _, npc1 in pairs(workspace.Proximity:GetChildren()) do
+        local ok = true
+        for _, npc2 in pairs(goodNPC) do
+            if string.find(npc1.Name, npc2) or string.find(npc1.Name, "Pickaxe") or string.find(npc1.Name, "Potion") then
+                ok = false
+                break;
+            end
+        end
+        if ok == false then continue end
+        buttonNPC[npc1.Name] = tabs.Teleport:AddButton({
+            Title = npc1.Name,
+            Description = "",
+            Callback = function() 
+                teleportToNPC(npc1.Name)
+            end
+        })
+    end
+
     -- mmore
     local SellButton = tabs.More:AddButton({
         Title = "Sell Ore",
@@ -270,6 +465,12 @@ do
             teleSell()
         end
     })
+    local fpsBoost =  tabs.More:AddToggle("fpsBoost", {Title = "Reduce Lag/ FPS Boost", Default = false})
+    fpsBoost:OnChanged(function()
+        if fpsBoost.Value then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/khuyenbd8bb/RobloxKaitun/refs/heads/main/FPS%20Booster.lua"))()
+        end
+    end)
     
     function Parent(GUI)
             if syn and syn.protect_gui then
