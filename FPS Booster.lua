@@ -312,7 +312,7 @@ end
 
 for i, v in pairs(Descendants) do
     pcall(CheckIfBad, v)
-end
+end 
 
 if _G.SendNotifications then
     StarterGui:SetCore("SendNotification", {
