@@ -1,4 +1,4 @@
-if  true then 
+if  true then --123
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -387,7 +387,7 @@ end)
 
 
 local Window = Fluent:CreateWindow({
-    Title = "Tiger HUB | The Forge | Version: 1.2 | Auto Sell Ores",
+    Title = "Tiger HUB | The Forge | Version: 1.3 | Underground UPD/ Fix Auto Sell",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
