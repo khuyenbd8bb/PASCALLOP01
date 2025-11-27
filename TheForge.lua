@@ -1,4 +1,4 @@
-if  true then -- 123
+if  true then
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -345,9 +345,9 @@ local function scanOreChances()
 end
 local chanceOreList = scanOreChances()
 task.spawn(function()
-    local Ore = game:GetService("Players").LocalPlayer.PlayerGui.Forge.OreSelect.OresFrame.Frame.Background:GetChildren()
     while true do
-    for _, ore in pairs(Ore) do
+    local Ore = game:GetService("Players").LocalPlayer.PlayerGui.Forge.OreSelect.OresFrame.Frame.Background:GetChildren()
+    for _, ore in pairs(Ore) do        
         if ore.Name and chanceOreList[ore.Name] and chanceOreList[ore.Name].Chance <= autoSellRarity then
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
             local RunCommand = ReplicatedStorage.Shared.Packages.Knit.Services.DialogueService.RF.RunCommand -- RemoteFunction 
