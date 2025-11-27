@@ -1,4 +1,4 @@
-if  true then
+if  true then -- 123
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -71,7 +71,6 @@ local function getDistance(obj1, obj2)
 end
 -- FFARM MMine
 task.spawn(function()
-    teleSell()
     while true do
         if isMine then
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -168,6 +167,7 @@ local function mine(rock)
                 break;
             end
         end
+        if isFixAutoSell and canSellFix then break end
         task.wait()
     end
 end
@@ -175,6 +175,7 @@ local function checkOre()
     local Rock = getAllDescendants(workspace.Rocks)
 
     for _, rock in pairs(Rock) do
+        if isFixAutoSell and canSellFix then break end
         if rock.Name == "Hitbox" then
             if not rock then 
                 task.wait()
