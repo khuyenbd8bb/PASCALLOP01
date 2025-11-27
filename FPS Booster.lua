@@ -324,10 +324,15 @@ if _G.SendNotifications then
 end
 warn(" FPS Booster!")
 
+local canRun = true
+
 game.DescendantAdded:Connect(function(value)
+    if not canRun then return end
+
+    canRun = false
     task.delay(20, function()
-        if value and value.Parent then
-            pcall(CheckIfBad, value)
-        end
+        canRun = true
+        pcall(CheckIfBad, value)
     end)
 end)
+
