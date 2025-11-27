@@ -324,13 +324,20 @@ if _G.SendNotifications then
 end
 warn(" FPS Booster!")
 
-local canRun = true
+local Value = {}
+game.DescendantAdded:Connect(function(value)
+    table.insert(Value, value)
+end)
 
 while true do
-    Descendants = game:GetDescendants()
-    for i, v in pairs(Descendants) do
-        pcall(CheckIfBad, v)
+    for i, value in pairs(Value) do
+        if value then
+            pcall(CheckIfBad, value)
+        end
     end
+    table.clear(Value)
     task.wait(20)
 end
+
+
 
