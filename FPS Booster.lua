@@ -302,7 +302,7 @@ coroutine.wrap(pcall)(function()
                 warn("✓ Đã xóa nil instances")
             end
         end
-    end
+    end 
 end)
 
 local Descendants = game:GetDescendants()
