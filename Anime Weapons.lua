@@ -1,4 +1,3 @@
--- HHUIHUHU
 _G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
@@ -29,14 +28,12 @@ local attackRangePart
 local attackRange 
 
 local monsterList = {} ; local nameList = {}; local targetList = {}
-
-
 local dungeonList = {};   local raidList = {}; local defList = {}; 
 local targetDungeon = {}; local targetRaid = {}; local targetDef = {};
 local dungeonNumber = {}; local raidNumber = {}; local defNumber = {};
 local dungeonTime  =  {}; local raidTime  =  {}; local defTime = {};
 local powerList = {}; local tooglePower = {};
-
+local masteryAccessory = ""; local damageAccessory = ""
 
 local teleportBackMap = "None"
 
@@ -510,6 +507,15 @@ local function autoEquipPower()
             mode
         }
     )
+    task.wait(0.5)
+    local accessory = ""
+    if mode == "Mastery" then accessory = masteryAccessory else accessory = damageAccessory end
+    Reliable:FireServer(
+        "Accessory Equip",
+        {
+            accessory
+        }
+    )
 end
 
 task.spawn(function()
@@ -796,7 +802,7 @@ end)
 
 -- GGUI
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 3.0 | Power Pannel",
+        Title = "Tiger HUB | Anime Weapons | Version: 3.1 | Accessory/ Power Equip Best ",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -1008,7 +1014,6 @@ end)
                 end
             end
         end)
-
         local toogleFarmDungeon = tabs.Dungeon:AddToggle("toogleFarmDungeon", {Title = "Auto Farm Dungeons/ Raids", Default = false})
         toogleFarmDungeon:OnChanged(function()
             isDungeon = toogleFarmDungeon.Value
@@ -1016,10 +1021,6 @@ end)
                 
                 autoFarmDungeon()
             end
-        end)
-        local toogleAutoEquipPower = tabs.Dungeon:AddToggle("toogleAutoEquipPower", {Title = "Auto Equip Best Damge in GameMode", Default = false, Description = "Will switch back to Mastery after gamemode"})
-        toogleAutoEquipPower:OnChanged(function()
-            isAutoEquipPower = toogleAutoEquipPower.Value
         end)
 
         local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
@@ -1067,7 +1068,38 @@ end)
                 targetWaveDef = tonumber(inputTargetWaveDef.Value)
             end
         end)
+        local SectionD = tabs.Dungeon:AddSection("Auto change power/ Accessory in gamemode")
+        local inputDamageAccessory = tabs.Dungeon:AddInput("inputDamageAccessory", {
+            Title = "in GameMode Accessory Name",
+            Description = "Remove Space/blank",
+            Default = "WildHead",
+            Placeholder = "Remove Space/blank",
+            Numeric = false, -- Only allows numbers
+            Finished = true, -- Only calls callback when you press enter
+            Callback = function(Value)
+            end
+        })
+        inputDamageAccessory:OnChanged(function()
+            damageAccessory = inputDamageAccessory.Value
+        end)
+        local inputMasteryAccessory = tabs.Dungeon:AddInput("inputMasteryAccessory", {
+            Title = "out GameMode Accessory Name",
+            Description = "Remove Space/blank",
+            Default = "EletricDrums",
+            Placeholder = "Remove Space/blank",
+            Numeric = false, -- Only allows numbers
+            Finished = true, -- Only calls callback when you press enter
+            Callback = function(Value)
+            end
+        })
+        inputMasteryAccessory:OnChanged(function()
+            masteryAccessory = inputMasteryAccessory.Value
+        end)
 
+        local toogleAutoEquipPower = tabs.Dungeon:AddToggle("toogleAutoEquipPower", {Title = "Auto Equip Best Damge in GameMode", Default = false, Description = "Will switch back to Mastery after gamemode"})
+        toogleAutoEquipPower:OnChanged(function()
+            isAutoEquipPower = toogleAutoEquipPower.Value
+        end)
         -- SStronger
         local toogleFuse = tabs.Stronger:AddToggle("toogleFuse", {Title = "Auto Fuse Weapons", Default = false})
         toogleFuse:OnChanged(function()
