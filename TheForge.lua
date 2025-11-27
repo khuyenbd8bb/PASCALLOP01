@@ -1,10 +1,12 @@
-if  true then -- hihihi
+if  true then 
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Config-Library/main/Main.lua"))()
 local TextChatService = game:GetService("TextChatService")
+local OreFolder = game:GetService("ReplicatedStorage").Shared.Data.Ore
+
 local distance = 10000
 local playerSpeed = 30
 local goodNPC = {}; local allNPC = {}; buttonNPC = {}
@@ -16,10 +18,13 @@ local character = player.Character
 local humanoid = character:FindFirstChild("Humanoid")
 local hrp = character:FindFirstChild("HumanoidRootPart")
 
+
+local autoSellRarity = 0
 local isFarm = false; local isMine = false; 
 local isKill = false; local isSwing = false;
 local oreList = {} ; local nameOreList = {}; local targetOreList = {}
 local monsterList = {} ; local nameMonsterList = {}; local targetMonsterList = {}
+local oreSellList = {}; local oreSellTargetList = {};
 
 -- MAIN
 
@@ -156,6 +161,7 @@ local function mine(rock)
 end
 local function checkOre()
     local Rock = getAllDescendants(workspace.Rocks)
+
     for _, rock in pairs(Rock) do
         if rock.Name == "Hitbox" then
             if not rock then 
@@ -292,6 +298,60 @@ local function autoKill()
         task.wait()
     end
 end
+-- SSell
+local function teleSell()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Dialogue = ReplicatedStorage.Shared.Packages.Knit.Services.ProximityService.RF.Dialogue -- RemoteFunction 
+    local GreedyCey = workspace.Proximity["Greedy Cey"]
+    Dialogue:InvokeServer(
+        GreedyCey
+    )
+end
+local function scanOreChances()
+    local results = {}
+    for _, category in ipairs(OreFolder:GetChildren()) do
+        if category:IsA("Folder") then
+            for _, module in ipairs(category:GetChildren()) do
+                if module:IsA("ModuleScript") then
+                    local ok, data = pcall(require, module)
+                    if ok and type(data) == "table" then
+                        if data.Chance ~= nil then
+                            results[module.Name] = {
+                                Chance = data.Chance,
+                                Category = category.Name
+                            }
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return results
+end
+local chanceOreList = scanOreChances()
+task.spawn(function()
+    teleSell()
+    local Ore = game:GetService("Players").LocalPlayer.PlayerGui.Forge.OreSelect.OresFrame.Frame.Background:GetChildren()
+    while true do
+    for _, ore in pairs(Ore) do
+        if ore.Name and chanceOreList[ore.Name] and chanceOreList[ore.Name].Chance <= autoSellRarity then
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local RunCommand = ReplicatedStorage.Shared.Packages.Knit.Services.DialogueService.RF.RunCommand -- RemoteFunction 
+            warn("sell")
+            RunCommand:InvokeServer(
+                "SellConfirm",
+                {
+                    Basket = {
+                        [ore.Name] = 1,
+                    }
+                }
+            )
+        end
+    end
+    task.wait(1)
+   end
+end)
+
 -- TTeleport
 local function teleportToNPC(npcTarget)
     for _, npc1 in pairs(workspace.Proximity:GetChildren()) do
@@ -312,16 +372,9 @@ task.spawn(function()
     end
 end)
 
-local function teleSell()
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Dialogue = ReplicatedStorage.Shared.Packages.Knit.Services.ProximityService.RF.Dialogue -- RemoteFunction 
-    local GreedyCey = workspace.Proximity["Greedy Cey"]
-    Dialogue:InvokeServer(
-        GreedyCey
-    )
-end
+
 local Window = Fluent:CreateWindow({
-    Title = "Tiger HUB | The Forge | Version: 1.1 | Auto Kill Monsters/ Teleport to all NPC",
+    Title = "Tiger HUB | The Forge | Version: 1.2 | Auto Sell Ores",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -330,10 +383,11 @@ local Window = Fluent:CreateWindow({
 })
 
 local tabs = {
-        Mine = Window:AddTab({ Title = "Mining", Icon = "swords" }),
+        Mine = Window:AddTab({ Title = "Mining", Icon = "pickaxe" }),
         Kill = Window:AddTab({ Title = "Killing", Icon = "swords" }),
-        Teleport = Window:AddTab({ Title = "Teleport", Icon = "swords" }),
-        More = Window:AddTab({ Title = "Mores", Icon = "user-cog" }),
+        Sell = Window:AddTab({ Title = "Auto Sell", Icon = "dollar-sign" }),
+        Teleport = Window:AddTab({ Title = "Teleport", Icon = "rabbit" }),
+        More = Window:AddTab({ Title = "Mores", Icon = "rabbit" }),
         Settings = Window:AddTab({ Title = "Player Config", Icon = "user-cog" })
     }
     
@@ -426,6 +480,22 @@ do
     toogleSwing:OnChanged(function()
         isSwing = toogleSwing.Value
     end)
+    -- AA SSell
+    local inputAutoSell = tabs.Sell:AddInput("inputAutoSell", {
+        Title = "Sell ALL Ores under this chance",
+        Default = 0,
+        Placeholder = "A number",
+        Numeric = true, -- Only allows numbers
+        Finished = true, -- Only calls callback when you press enter
+        Callback = function(Value)
+        end
+    })
+
+    inputAutoSell:OnChanged(function()
+        if inputAutoSell.Value ~= "" then
+            autoSellRarity = tonumber(inputAutoSell.Value)
+        end
+    end)
     -- TTeleport
     for _, npc1 in pairs(workspace.Proximity:GetChildren()) do
         for _, npc2 in pairs(goodNPC) do
@@ -457,8 +527,7 @@ do
                 teleportToNPC(npc1.Name)
             end
         })
-    end
-
+    end    
     -- mmore
     local SellButton = tabs.More:AddButton({
         Title = "Sell Ore",
