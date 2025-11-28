@@ -1186,7 +1186,7 @@ end)
         InterfaceManager:SetLibrary(Fluent)
 
         -- Ignore keys that are used by ThemeManager.
-        -- (we dont want configs to save themes, do we?) 
+        -- (we dont want configs to save themes, do we?)
         SaveManager:IgnoreThemeSettings()
 
         -- You can add indexes of elements the save manager should ignore
