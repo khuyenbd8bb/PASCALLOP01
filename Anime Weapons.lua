@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons" -- 12
+_G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -113,11 +113,11 @@ task.spawn(function()
         end
     end
     local VirtualUser = game:GetService('VirtualUser')
-
-    game:GetService('Players').LocalPlayer.Idled:Connect(function()
+    while true do
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new())
-    end)
+        task.wait(60)
+    end
 end)
 
 local function setAutoAttack()
@@ -573,7 +573,7 @@ local function killDungeon(monster)
     local safeHeight = -2
 
     local headPos = getPosition(head)
-    local targetPosition = headPos + Vector3.new(0, hrpToFeet + safeHeight, -attackRange+5)        
+    local targetPosition = headPos + Vector3.new(0, hrpToFeet + safeHeight, -attackRange+8)        
     hrp.CFrame = CFrame.new(targetPosition)
     while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
         if not hrp then 
@@ -584,7 +584,7 @@ local function killDungeon(monster)
             return
         end
         hrp.CFrame = CFrame.new(targetPosition)
-        local newtargetPosition = getPosition(head) + Vector3.new(0, hrpToFeet + safeHeight, -attackRange+5)   
+        local newtargetPosition = getPosition(head) + Vector3.new(0, hrpToFeet + safeHeight, -attackRange+8)   
         if (targetPosition-getPosition(head)).Magnitude >= attackRange then targetPosition = newtargetPosition end
         if head.Transparency ~= 0 then return end
         task.wait()
@@ -595,7 +595,6 @@ local function checkDungeon()
     dontTeleport = true
     while waveDungeon <= targetWaveDungeon and inDungeon and isDungeon and waveRaid <= targetWaveRaid and waveDef <= targetWaveDef do 
         local monsters = workspace.Enemies:GetChildren()
-        if #monsters == 0 then continue end
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
             if not Head or Head.Transparency ~= 0 then continue end
@@ -608,7 +607,7 @@ local function checkDungeon()
             killDungeon(monster)
             task.wait()
         end
-    task.wait()
+        task.wait()
     end
     if isDungeon and waveRaid > targetWaveRaid or waveDef > targetWaveDef then teleportBack() end
     dontTeleport = false
@@ -788,7 +787,7 @@ table.insert(powerList, {name = "Breathing", auto = false})
 table.insert(powerList, {name = "DemonArt", auto = false})
 table.insert(powerList, {name = "Titan", auto = false})
 table.insert(powerList, {name = "Organization", auto = false})
-table.insert(powerList, {name = "Shadows", auto = false})
+table.insert(powerList, {name = "Shadow", auto = false})
 
 local function changePower(name, value)
     for _, power in pairs(powerList) do
