@@ -1,4 +1,4 @@
-if  true then
+if  true then -- 123
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -71,6 +71,7 @@ local function getDistance(obj1, obj2)
 end
 -- FFARM MMine
 task.spawn(function()
+    teleSell()
     while true do
         if isMine then
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -248,10 +249,11 @@ local function kill(monster)
     local status = monster:FindFirstChild("Status")
     monster = monster:FindFirstChild("HumanoidRootPart")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = -1
-    local xy = 1
+    local safeHeight = -2
+    local xy = 1.5
     local targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)        
     hrp.CFrame = CFrame.new(targetPosition)
+    hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
     local stillTarget = false
     for _, target in pairs(targetMonsterList) do
         if not monster  then return end
@@ -284,6 +286,7 @@ local function kill(monster)
         end
         targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)   
         hrp.CFrame = CFrame.new(targetPosition)
+        hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
         if status:FindFirstChild("Dead") then alive = false end
         task.wait()
     end
@@ -425,7 +428,7 @@ do
     end)
 
     local resetButton = tabs.Mine:AddButton({
-        Title = "Reset Rocks List",
+        Title = "Reset Ores List",
         Description = "",
         Callback = function() 
             MultiDropdownOre:SetValue({})
@@ -436,7 +439,7 @@ do
     })
     MultiDropdownOre:SetValues(nameOreList)
 
-    local toogleFarm = tabs.Mine:AddToggle("toogleFarm", {Title = "Auto TP to Selected Rock", Default = false})
+    local toogleFarm = tabs.Mine:AddToggle("toogleFarm", {Title = "Auto TP to Selected Ores", Default = false})
     toogleFarm:OnChanged(function()
         isFarm = toogleFarm.Value
         if (toogleFarm.Value) then
@@ -445,7 +448,7 @@ do
             end)
         end
     end)
-    local toogleMine = tabs.Mine:AddToggle("toogleFarm", {Title = "Auto Mining", Default = false})
+    local toogleMine = tabs.Mine:AddToggle("toogleMine", {Title = "Auto Mining", Default = false})
     toogleMine:OnChanged(function()
         isMine = toogleMine.Value
     end)
@@ -499,7 +502,7 @@ do
         Default = 0,
         Placeholder = "A number",
         Numeric = true, -- Only allows numbers
-        Finished = true, -- Only calls callback when you press enter
+        Finished = false, -- Only calls callback when you press enter
         Callback = function(Value)
         end
     })
@@ -509,7 +512,7 @@ do
             autoSellRarity = tonumber(inputAutoSell.Value)
         end
     end)
-    local toogleAutoSellFix = tabs.Sell:AddToggle("toogleAutoSellFix", {Title = "Turn this on if you use auto Sell", Default = false})
+    local toogleAutoSellFix = tabs.Sell:AddToggle("toogleAutoSellFix", {Title = "Turn this on if you use auto Sell + Auto TP Ores", Default = false})
     toogleAutoSellFix:OnChanged(function()
         isFixAutoSell = toogleAutoSellFix.Value
     end)
@@ -594,7 +597,7 @@ do
 
         SaveManager:SetLibrary(Fluent)
         InterfaceManager:SetLibrary(Fluent)
- 
+
         -- Ignore keys that are used by ThemeManager.
         -- (we dont want configs to save themes, do we?)
         SaveManager:IgnoreThemeSettings()
