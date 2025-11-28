@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons" -- 123
+_G.Key = "AnimeWeapons"
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -118,6 +118,12 @@ task.spawn(function()
     UserInputService.WindowFocusReleased:Connect(function()
     RunService.Stepped:Wait()
     pcall(firesignal, UserInputService.WindowFocused)
+    local VirtualUser = game:GetService('VirtualUser')
+
+    game:GetService('Players').LocalPlayer.Idled:Connect(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
     end)
 end)
 
