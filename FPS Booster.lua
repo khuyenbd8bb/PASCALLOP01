@@ -229,9 +229,6 @@ coroutine.wrap(pcall)(function()
         if sethiddenproperty then
             sethiddenproperty(terrain, "Decoration", false)
         end
-        if _G.ConsoleLogs then
-            warn("✓ Đã tối ưu đồ họa nước")
-        end
     end
 end)
 
@@ -243,9 +240,6 @@ coroutine.wrap(pcall)(function()
         if sethiddenproperty then
             sethiddenproperty(Lighting, "Technology", 2)
         end
-        if _G.ConsoleLogs then
-            warn("✓ Đã tắt bóng đổ")
-        end
     end
 end)
 
@@ -253,9 +247,6 @@ coroutine.wrap(pcall)(function()
     if _G.Settings.Other and _G.Settings.Other["Low Rendering"] then
         settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
         settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level04
-        if _G.ConsoleLogs then
-            warn("✓ Đã giảm chất lượng rendering")
-        end
     end
 end)
 
@@ -265,9 +256,6 @@ coroutine.wrap(pcall)(function()
             v:Destroy()
         end
         MaterialService.Use2022Materials = false
-        if _G.ConsoleLogs then
-            warn("✓ Đã reset materials")
-        end
     end
 end)
 
@@ -277,17 +265,10 @@ coroutine.wrap(pcall)(function()
             local fpsCap = _G.Settings.Other["FPS Cap"]
             if type(fpsCap) == "number" then
                 setfpscap(fpsCap)
-                if _G.ConsoleLogs then
-                    warn("✓ FPS giới hạn: " .. fpsCap)
-                end
             elseif fpsCap == true then
                 setfpscap(1000000)
-                if _G.ConsoleLogs then
-                    warn("✓ Đã bỏ giới hạn FPS")
-                end
             end
         else
-            warn("✗ Executor không hỗ trợ setfpscap")
         end
     end
 end)
@@ -298,17 +279,11 @@ coroutine.wrap(pcall)(function()
             for _, v in pairs(getnilinstances()) do
                 pcall(v.Destroy, v)
             end
-            if _G.ConsoleLogs then
-                warn("✓ Đã xóa nil instances")
-            end
         end
     end 
 end)
 
 local Descendants = game:GetDescendants()
-if _G.ConsoleLogs then
-    warn("Đang kiểm tra " .. #Descendants .. " instances...")
-end
 
 for i, v in pairs(Descendants) do
     pcall(CheckIfBad, v)
@@ -322,7 +297,6 @@ if _G.SendNotifications then
         Button1 = "OK"
     })
 end
-warn(" FPS Booster!")
 
 local Value = {}
 game.DescendantAdded:Connect(function(value)
