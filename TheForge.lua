@@ -1,4 +1,4 @@
-if  true then
+if  true then -- 123
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -28,13 +28,17 @@ local monsterList = {} ; local nameMonsterList = {}; local targetMonsterList = {
 local oreSellList = {}; local oreSellTargetList = {};
 
 -- MAIN
-
 assert(firesignal, "Your exploit does not support firesignal.")
 local UserInputService: UserInputService = game:GetService("UserInputService")
 local RunService: RunService = game:GetService("RunService")
 UserInputService.WindowFocusReleased:Connect(function()
    RunService.Stepped:Wait()
    pcall(firesignal, UserInputService.WindowFocused)
+end)
+local VirtualUser = game:GetService('VirtualUser')
+game:GetService('Players').LocalPlayer.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
 end)
 
 table.insert(goodNPC, "Runemaker"); table.insert(goodNPC, "Enhancer");
