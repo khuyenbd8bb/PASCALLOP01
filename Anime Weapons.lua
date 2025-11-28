@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons"
+_G.Key = "AnimeWeapons" -- 12
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -15,7 +15,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 local isAutoEquipPower = false
-local distance = 1000
+local distance = 10000
 local waveGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Raid.wave.amount
 local roomGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Dungeon.room.amount
 local defGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Defense.wave.amount
@@ -112,18 +112,11 @@ task.spawn(function()
                 if info.source and string.find(info.source, "AutoReconnect.c") then deepScan(func, "Main") end
         end
     end
-    assert(firesignal, "Your exploit does not support firesignal.")
-    local UserInputService: UserInputService = game:GetService("UserInputService")
-    local RunService: RunService = game:GetService("RunService")
-    UserInputService.WindowFocusReleased:Connect(function()
-    RunService.Stepped:Wait()
-    pcall(firesignal, UserInputService.WindowFocused)
     local VirtualUser = game:GetService('VirtualUser')
 
     game:GetService('Players').LocalPlayer.Idled:Connect(function()
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new())
-    end)
     end)
 end)
 
@@ -319,20 +312,30 @@ local function resetEnemiesList()
     table.clear(monsterList)
 
     for _, monster in pairs(monsters) do
-        
-        if monster.Name == "" or not monster.Name then 
+        local name = monster:FindFirstChild("Head")
+        if not name then continue end
+        if name:FindFirstChild("EnemyOverhead") then
+            name = name:FindFirstChild("EnemyOverhead")
+            if not name then continue end
+            name = name:FindFirstChild("name")
+            if not name then continue end
+            name = name.Text
+        else 
+            name = "Boss"
+        end
+
+        if not name then 
             task.wait()
             continue 
         end
-        local nameText = monster.Name
         
         if monster.Head.Transparency ~= 0 then continue end
         if getDistance(hrp, monster.HumanoidRootPart) >= distance then continue end
 
-        if not nameSet[nameText] then
-            table.insert(monsterList, nameText)
-            nameSet[nameText] = true
-            table.insert(nameList, nameText)
+        if not nameSet[name] then
+            table.insert(monsterList, name)
+            nameSet[name] = true
+            table.insert(nameList, name)
         end
     end
 
@@ -394,6 +397,17 @@ end
 local function check()
     local monsters = workspace.Enemies:GetChildren()
     for _, monster in pairs(monsters) do
+        local name = monster:FindFirstChild("Head")
+        if not name then continue end
+        if name:FindFirstChild("EnemyOverhead") then
+            name = name:FindFirstChild("EnemyOverhead")
+            if not name then continue end
+            name = name:FindFirstChild("name")
+            if not name then continue end
+            name = name.Text
+        else 
+            name = "Boss"
+        end
         if not keepRunning then break end
         if not monster:FindFirstChild("Head") then return end
         local Head = monster.Head
@@ -406,14 +420,13 @@ local function check()
         if dis >= distance or dis <= attackRange then continue end
 
         if not monster then continue end
-        if monster.Name == "" or not monster.Name then 
+        if not name then 
             task.wait()
             continue
         end
-        local nameText = monster.Name
 
         for _, target in ipairs(targetList) do
-            if (target == nameText) then
+            if (target == name) then
                 isKilling = true
                 if inDungeon then 
                     isKilling = false
@@ -775,6 +788,7 @@ table.insert(powerList, {name = "Breathing", auto = false})
 table.insert(powerList, {name = "DemonArt", auto = false})
 table.insert(powerList, {name = "Titan", auto = false})
 table.insert(powerList, {name = "Organization", auto = false})
+table.insert(powerList, {name = "Shadows", auto = false})
 
 local function changePower(name, value)
     for _, power in pairs(powerList) do
@@ -1034,7 +1048,7 @@ end)
         local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
             Title = "Auto Teleport to Map",
             Description = "IF NOT IN DUNGEON OR RAID",
-            Values = {"None", "Naruto","DragonBall", "OnePiece", "DemonSlayer", "Paradis"},
+            Values = {"None", "Naruto","DragonBall", "OnePiece", "DemonSlayer", "Paradis", "SoloLevel"},
             Multi = false,
             Default = "None",
         })
