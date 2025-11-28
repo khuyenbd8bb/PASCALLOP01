@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons"
+_G.Key = "AnimeWeapons" -- 123
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -112,10 +112,12 @@ task.spawn(function()
                 if info.source and string.find(info.source, "AutoReconnect.c") then deepScan(func, "Main") end
         end
     end
-    local VirtualUser = game:GetService('VirtualUser')
-    game:GetService('Players').LocalPlayer.Idled:Connect(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
+    assert(firesignal, "Your exploit does not support firesignal.")
+    local UserInputService: UserInputService = game:GetService("UserInputService")
+    local RunService: RunService = game:GetService("RunService")
+    UserInputService.WindowFocusReleased:Connect(function()
+    RunService.Stepped:Wait()
+    pcall(firesignal, UserInputService.WindowFocused)
     end)
 end)
 
@@ -802,7 +804,7 @@ end)
 
 -- GGUI
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Weapons | Version: 3.1 | Accessory/ Power Equip Best ",
+        Title = "Tiger HUB | Anime Weapons | Version: 3.2 | New Anti AFK hope this work ",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
