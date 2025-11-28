@@ -1,4 +1,4 @@
-if  true then -- 123
+if  true then
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -28,6 +28,14 @@ local monsterList = {} ; local nameMonsterList = {}; local targetMonsterList = {
 local oreSellList = {}; local oreSellTargetList = {};
 
 -- MAIN
+
+assert(firesignal, "Your exploit does not support firesignal.")
+local UserInputService: UserInputService = game:GetService("UserInputService")
+local RunService: RunService = game:GetService("RunService")
+UserInputService.WindowFocusReleased:Connect(function()
+   RunService.Stepped:Wait()
+   pcall(firesignal, UserInputService.WindowFocused)
+end)
 
 table.insert(goodNPC, "Runemaker"); table.insert(goodNPC, "Enhancer");
 table.insert(goodNPC, "Miner Fred"); table.insert(goodNPC, "Sensei Moro");
@@ -139,7 +147,12 @@ local function mine(rock)
         end
     end   
     if not rock.Parent or not rock.Parent:FindFirstChild("infoFrame") then return end
-    local hp = rock.Parent.infoFrame.Frame.rockHP
+    local hp = rock.Parent:FindFirstChild("infoFrame")
+    if not hp then return end
+    hp = hp:FindFirstChild("Frame")
+    if not hp then return end
+    hp = hp:FindFirstChild("rockHP")
+    if not hp then return end
     
     local alive = true
     local name = rock.Parent.Name
@@ -516,6 +529,13 @@ do
     toogleAutoSellFix:OnChanged(function()
         isFixAutoSell = toogleAutoSellFix.Value
     end)
+    local SellButton = tabs.Sell:AddButton({
+        Title = "Click this if its not autosell",
+        Description = "",
+        Callback = function() 
+            teleSell()
+        end
+    })
     -- TTeleport
     for _, npc1 in pairs(workspace.Proximity:GetChildren()) do
         for _, npc2 in pairs(goodNPC) do
@@ -549,13 +569,7 @@ do
         })
     end    
     -- mmore
-    local SellButton = tabs.More:AddButton({
-        Title = "Sell Ore",
-        Description = "",
-        Callback = function() 
-            teleSell()
-        end
-    })
+    
     local fpsBoost =  tabs.More:AddToggle("fpsBoost", {Title = "Reduce Lag/ FPS Boost", Default = false})
     fpsBoost:OnChanged(function()
         if fpsBoost.Value then
