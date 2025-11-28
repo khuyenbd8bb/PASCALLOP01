@@ -1,5 +1,3 @@
-
-
 if game.PlaceId == 105716258039711 then
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -15,9 +13,9 @@ local hrp = character:FindFirstChild("HumanoidRootPart")
 local humanoid = character:FindFirstChild("Humanoid")
 
 
-local distance = 700
+local distance = 1000
 local farm2Delay = 0.1
-local waveGui = game:GetService("Players").LocalPlayer.PlayerGui
+local waveGui = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Gamemodes.Raid.Background.Wave
 local roomGui = game:GetService("Players").LocalPlayer.PlayerGui
 local defGui = game:GetService("Players").LocalPlayer.PlayerGui
 
@@ -27,7 +25,7 @@ local targetWaveRaid = 500; local targetWaveDef = 500; local targetWaveDungeon =
 local gachaZone
 local attackRangePart 
 local attackRange 
-
+local dontTeleport
 local monsterList = {} -- Name, HumanoidRoot
 local nameList = {} -- Table HUB
 local targetList = {}
@@ -35,10 +33,14 @@ local dungeonList = {};   local raidList = {}; local defList = {};
 local targetDungeon = {}; local targetRaid = {}; local targetDef = {};
 local dungeonNumber = {}; local raidNumber = {}; local defNumber = {};
 local dungeonTime  =  {}; local raidTime  =  {}; local defTime = {};
+local isAutoJoinRaid = false; 
+local isAutoClaimExpedition = false;
 local powerList = {}; 
-local tooglePower = {}
-local teleportBackMap = "None"; 
+local tooglePower = {}; local toogleBoss = {}; local toogleStar = {}
+local targetStar; local expeditionTarget;
+local teleportBackBossMap = "None";  
 
+local isTele = false
 local repeatTime = 1
 local locationList = {}; local locationNumber = {}; 
 local locationTargetList = {}
@@ -46,53 +48,82 @@ local isTeleportFarm = false
 local isTeleportHatch = false
 
 local isHatch = false
-local inDungeon = false
+local inDungeon = false --
 local isDungeon = false
 local isFarm1 = false
 local isFarm2 = false
-local isKilling = false
 local isRankUp = false
 local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
+
 
 local isAutoAttack = false
 table.insert(powerList, {name = "Hero Rank", auto = false})
 table.insert(powerList, {name = "Ninja Rank", auto = false})
 table.insert(powerList, {name = "Haki", auto = false})
 table.insert(powerList, {name = "Passive", auto = false})
+table.insert(powerList, {name = "Clan", auto = false})
+
+local isBoss = false
+local bossList = {
+    {name = "Sea King", map = "XYZ Metropolis", kill = false},
+    {name = "Cosmic Garou", map = "XYZ Metropolis", kill = false},
+    {name = "Itachi", map = "Ninja Village", kill = false},
+    {name = "Konan", map = "Ninja Village", kill = false},
+    {name = "Robin Lucci", map = "Forgotten Shore", kill = false},
+    {name = "Hantengu", map = "Slayer Forest", kill = false}
+}
+
 -- Main
+task.spawn(function()
+    local ok = true
+    if not isfolder("TigerHubAA") or not isfile("TigerHubAA/monsterList.json") then
+        makefolder("TigerHubAA")
+        writefile("TigerHubAA/monsterList.json", "[]") -- Changed from {} to [] for array
+        ok = false
+    end
+    
+    if not isfolder("TigerHubAA") or not isfile("TigerHubAA/locationList.json") then
+        makefolder("TigerHubAA")
+        writefile("TigerHubAA/locationList.json", "[]") -- Changed from {} to [] for array
+        ok = false
+    end
+    if not ok then return end
+    -- Read the file content first, then decode it
+    local monsterJsonContent = readfile("TigerHubAA/monsterList.json")
+    local monsterTable = Library.Decode(monsterJsonContent)
+    
+    nameList = monsterTable
+
+    monsterJsonContent = readfile("TigerHubAA/locationList.json")
+    monsterTable = Library.Decode(monsterJsonContent)
+    locationList = monsterTable
+
+    for i, locationObj in ipairs(monsterTable) do
+        -- Extract the number
+        table.insert(locationNumber, locationObj.number)
+        
+        -- Convert the pos string to Vector3
+        local posString = locationObj.pos
+        local x, y, z = posString:match("Vector3_%(([%d%.%-]+),%s*([%d%.%-]+),%s*([%d%.%-]+)%)")
+        
+        if x and y and z then
+            locationList[i] = {
+                number = locationObj.number,
+                pos = Vector3.new(tonumber(x), tonumber(y), tonumber(z))
+            }
+        end
+    end
+end)
+
+local VirtualUser = game:GetService('VirtualUser')
+
+game:GetService('Players').LocalPlayer.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
 
 
-local function setAutoAttack()
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local dataRemoteEvent = ReplicatedStorage.BridgeNet2.dataRemoteEvent -- RemoteEvent 
-    dataRemoteEvent:FireServer(
-        {
-            {
-                "General",
-                "Settings",
-                "Update",
-                "Auto Click",
-                isAutoAttack,
-                n = 20
-            },
-            "\2"
-        }
-    )
-    dataRemoteEvent:FireServer(
-        {
-            {
-                "General",
-                "Settings",
-                "Update",
-                "Auto Attack",
-                isAutoAttack,
-                n = 20
-            },
-            "\2"
-        }
-    )
-end
 task.spawn(function()
     while true do
         attackRangePart =  workspace.Cache:FindFirstChild("Area")
@@ -180,13 +211,88 @@ local function loadData()
     end
 
 end
+-- BBoss
+local function teleportToMap(map)
+    isTele = true
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local dataRemoteEvent = ReplicatedStorage.BridgeNet2.dataRemoteEvent -- RemoteEvent 
+    dataRemoteEvent:FireServer(
+        {
+            {
+                "Player",
+                "Teleport",
+                "Teleport",
+                map,
+                n = 4
+            },
+            "\2"
+        }
+    )
+    task.wait(3)
+    isTele = false
+end
+local function killBoss(boss, index)
+    local Monster =  workspace.Client.Enemies:GetChildren()
+    for _, monster in pairs(Monster) do
+        if monster.Name ~= boss then  continue end
+        local head = monster:FindFirstChild("Head")
+        local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
+        local safeHeight = -2
+    
+        local headPos = getPosition(head)
+        local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
+        hrp.CFrame = CFrame.new(targetPosition)
+
+        local alive = true
+        local connection 
+        connection = head:GetPropertyChangedSignal("Transparency"):Connect(function()
+            alive = false
+            connection:Disconnect()
+        end)
+        while isBoss and  alive and bossList[index].kill do
+            hrp.CFrame = CFrame.new(targetPosition)
+            if not hrp then 
+                task.wait()
+                continue
+            end
+            if getDistance(hrp, monster) > distance then 
+                return
+            end
+            task.wait()
+        end
+    end
+end
+local function foundBoss(text) 
+    for i, boss in ipairs(bossList) do
+        if string.find(text, boss.name) and string.find(text, boss.map) then 
+            if boss.kill == true then 
+                return i
+            end
+        end
+    end
+    return false
+end
+TextChatService.MessageReceived:Connect(function(message)
+    if foundBoss(message.Text) == false then 
+        warn(message.Text)
+    end
+    if not message or foundBoss(message.Text) == false or isBoss then return end
+    warn("true")
+    isBoss = true
+    task.wait(0.5)
+    local boss = foundBoss(message.Text)
+    teleportToMap(bossList[boss].map)
+    killBoss(bossList[boss].name, boss)
+    task.wait(3)
+    teleportToMap(teleportBackBossMap)
+    isBoss = false
+end)
 --FFarm
 local function resetEnemiesList()
     local monsters = workspace.Client.Enemies:GetChildren()
     local nameSet = {}           -- helper table for checking duplicates
     table.clear(nameList)
     table.clear(monsterList)
-
     for _, monster in pairs(monsters) do
         
         if monster.Name == "" or not monster.Name then 
@@ -210,10 +316,6 @@ local function kill(monster)
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
     local safeHeight = -2
     --local alive = head.Transparency
-    if inDungeon then 
-        isKilling = false
-        return
-    end
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
     hrp.CFrame = CFrame.new(targetPosition)
@@ -242,10 +344,6 @@ local function kill(monster)
             return
         end
         stillTarget = false
-        if inDungeon then 
-            isKilling = false
-            return
-        end
         for _, target in pairs(targetList) do
             if not monster.Parent or not monster then return end
             if monster.Name == "" then return end
@@ -258,15 +356,10 @@ local function kill(monster)
     end
 end
 local function kill2(monster)
-    warn("heree")
     local head = monster:FindFirstChild("Head")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
     local safeHeight = -2
     --local alive = head.Transparency
-    if inDungeon then 
-        isKilling = false
-        return
-    end
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
     hrp.CFrame = CFrame.new(targetPosition)
@@ -297,9 +390,8 @@ local function check()
 
         for _, target in ipairs(targetList) do
             if (target == nameText) then
-                warn(isFarm1, isFarm2)
+                warn("he")
                 if isFarm1 then kill(monster) end
-                warn(1)
                 if isFarm2 then kill2(monster) end
                 break
             end
@@ -308,7 +400,7 @@ local function check()
 end
 task.spawn(function()
     while true do
-        if inDungeon or (isFarm1 == false and isFarm2 == false) then 
+        if inDungeon or (isFarm1 == false and isFarm2 == false) or isBoss or isTele == true then 
             task.wait()
             continue
         end
@@ -325,7 +417,7 @@ local function teleportTo(target)
             if (getPosition(hrp) - Pos).Magnitude  > distance then return end
             
             local targetPosition = Pos        
-            if inDungeon then return end 
+            if inDungeon or isBoss then return end 
             hrp.CFrame = CFrame.new(targetPosition)
             break
         end
@@ -335,7 +427,7 @@ end
 
 local function autoTeleportFarm()
     while isTeleportFarm do
-        if inDungeon then 
+        if inDungeon or isBoss or isTele then 
             task.wait()
             continue 
         end
@@ -388,9 +480,97 @@ task.spawn(function()
         task.wait()
     end
 end)
+-- DDungeon
+task.spawn(function()
+    while true do
+        if isAutoJoinRaid == false then
+            task.wait(5)
+            continue
+        end
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local dataRemoteEvent = ReplicatedStorage.BridgeNet2.dataRemoteEvent -- RemoteEvent 
+        dataRemoteEvent:FireServer(
+            {
+                {
+                    "Gamemodes",
+                    "Raid",
+                    "Join",
+                    n = 3
+                },
+                "\2"
+            }
+        )
+        task.wait(5)
+    end
+end)
+local function killDungeon(monster)
+    local head = monster:FindFirstChild("Head")
+    local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
+    local safeHeight = -2
+    --local alive = head.Transparency
+    local headPos = getPosition(head)
+    local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
+
+    while isDungeon and isTele == false do
+        hrp.CFrame = CFrame.new(targetPosition)
+        if not hrp then 
+            task.wait()
+            continue
+        end
+        if not head then break end
+        if head.Transparency ~= 0 then break end
+        if getDistance(hrp, monster) > distance then 
+            return
+        end
+        task.wait()
+    end
+end
+
+local function checkDungeon() 
+    dontTeleport = true
+    while waveDungeon <= targetWaveDungeon and inDungeon and isDungeon and waveRaid <= targetWaveRaid and waveDef <= targetWaveDef and isTele == false do 
+        local monsters = workspace.Client.Enemies:GetChildren()
+        if #monsters == 0 then 
+            task.wait()
+            continue 
+        end
+        for _, monster in pairs(monsters) do
+            local Head = monster:FindFirstChild("Head")
+            if not Head or Head.Transparency ~= 0 then continue end
+            if not hrp then 
+                task.wait()
+                continue
+            end
+            local dis = getDistance(hrp, monster)
+            if dis >= distance or dis <= attackRange then continue end
+            killDungeon(monster)
+            if not isDungeon or isTele then break end
+            task.wait()
+        end
+    task.wait()
+    end
+    --if isDungeon and waveRaid > targetWaveRaid or waveDef > targetWaveDef then teleportBack() end
+    dontTeleport = false
+end
+
+local function joinDungeon()
+    inDungeon = true
+    checkDungeon()
+    inDungeon = false
+end
+local function autoFarmDungeon()
+    while (isDungeon) do
+        joinDungeon()
+        task.wait(1)    
+    end
+end
 -- SStronger
-local function autoHatch()
-    while isHatch do
+task.spawn(function()
+    while true do
+        if targetStar == "None" then
+            task.wait(1)
+            continue
+        end
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local dataRemoteEvent = ReplicatedStorage.BridgeNet2.dataRemoteEvent -- RemoteEvent 
         dataRemoteEvent:FireServer(
@@ -399,22 +579,21 @@ local function autoHatch()
                     "General",
                     "Stars",
                     "Open",
-                    "XYZ Metropolis",
+                    targetStar,
                     10,
                     n = 10
                 },
                 "\2"
             }
         )
-        task.wait()
+        task.wait(0.2)
     end
-end
-local function autoFuse()
-end
-local function autoRankUp()
-    while isRankUp do
+end)
+task.spawn(function()
+    while true do
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local dataRemoteEvent = ReplicatedStorage.BridgeNet2.dataRemoteEvent -- RemoteEvent 
+        if isRankUp == true then
         dataRemoteEvent:FireServer(
             {
                 {
@@ -425,11 +604,39 @@ local function autoRankUp()
                 },
                 "\2"
             }
-        )
-        task.wait(10)
-    end
+        ) end
+        if isAutoClaimExpedition == true then
+        dataRemoteEvent:FireServer(
+            {
+                {
+                    "General",
+                    "HeroesExpedition",
+                    "Claim",
+                    n = 3
+                },
+                "\2"
+            }
+        ) end
+        if expeditionTarget ~= "None" then
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local dataRemoteEvent = ReplicatedStorage.BridgeNet2.dataRemoteEvent -- RemoteEvent 
+            dataRemoteEvent:FireServer(
+                {
+                    {
+                        "General",
+                        "HeroesExpedition",
+                        "Start",
+                        expeditionTarget,
+                        n = 4
+                    },
+                    "\2"
+                }
+            )
 
-end
+        end
+        task.wait(5)
+    end
+end)
 -- GGUI
     
     local Window = Fluent:CreateWindow({
@@ -452,8 +659,9 @@ end
     local tabs = {
         Main = Window:AddTab({ Title = "Farm", Icon = "swords" }),
         Farm2 = Window:AddTab({ Title = "Location Farm", Icon = "swords" }),
+        Boss = Window:AddTab({ Title = "Boss", Icon = "swords" }),
+        Dungeon = Window:AddTab({ Title = "Raids", Icon = "skull" }),
         Power = Window:AddTab({ Title = "Auto Powers", Icon = "flame" }),
-        Dungeon = Window:AddTab({ Title = "Dungeons/ Raids", Icon = "skull" }),
         Stronger = Window:AddTab({ Title = "Auto Stronger", Icon = "flame" }),
         Settings = Window:AddTab({ Title = "Player Config", Icon = "user-cog" })
     }
@@ -486,7 +694,7 @@ end
                 MultiDropdown:SetValue({})
                 resetEnemiesList() 
                 MultiDropdown:SetValues(nameList)
-                Library:SaveConfig("TigerHub/monsterList.json", nameList)
+                Library:SaveConfig("TigerHubAA/monsterList.json", nameList)
             end
         })
         MultiDropdown:SetValues(nameList)
@@ -501,7 +709,6 @@ end
         local toogleFarm2 = tabs.Main:AddToggle("toogleFarm2", {Title = "2Auto kill selected enemies", Default = false, Description = "ONLY WORK WITH INSTANT KILL",})
         toogleFarm2:OnChanged(function()
             isFarm2 = toogleFarm2.Value
-            warn(isFarm2)
         end)
         local teleportFarmSpeed = tabs.Main:AddInput("teleportFarmSpeed", {
             Title = "Teleport Delay (Seconds)",
@@ -551,7 +758,7 @@ end
                     table.insert(list, location.number)
                 end
                 locationDropdown:SetValues(list)
-                Library:SaveConfig("TigerHub/locationList.json", locationList)
+                Library:SaveConfig("TigerHubAA/locationList.json", locationList)
             end
         })
 
@@ -597,6 +804,36 @@ end
         toogleLocationHatch:OnChanged(function()
             isTeleportHatch = toogleLocationHatch.Value
         end)
+        -- BBoss
+        local teleportBackBossDropdown = tabs.Boss:AddDropdown("teleportBackBossDropdown", {
+            Title = "Auto Teleport to Map",
+            Description = "After kill boss",
+            Values = {},
+            Multi = false,
+            Default = "None",
+        })
+        task.spawn(function()
+            local nameSet =  {}
+            local res = {}
+            table.insert(res, "None")
+            for _, boss in ipairs(bossList) do
+                if nameSet[boss.map] == true then continue end
+                table.insert(res, boss.map)
+                nameSet[boss.map] = true
+            end
+            teleportBackBossDropdown:SetValues(res)
+        end)
+        teleportBackBossDropdown:OnChanged(function(selectedValues)
+            teleportBackBossMap = selectedValues
+        end)
+        local sectionBoss = tabs.Boss:AddSection("Turn on before boss spawn!")
+        for _, boss in ipairs(bossList) do 
+            toogleBoss[boss.name] = tabs.Boss:AddToggle("toggleBoss"..boss.name, {Title = boss.map .. " " .. boss.name, Default = false, Description = "",})
+            toogleBoss[boss.name]:OnChanged(function()
+                boss.kill = toogleBoss[boss.name].Value
+            end)
+            task.wait()
+        end
         -- PPower
         for _, power in pairs(powerList) do 
             local name = power.name 
@@ -607,135 +844,68 @@ end
             task.wait()
         end
         --Dungeon
-        local dropdownDungeon = tabs.Dungeon:AddDropdown("dropdownDungeon", {
-            Title = "Dungeons",
-            Description = "Select Dungeon to auto farm",
-            Values = {},
-            Multi = true,
-            Default = {},
-        })
-        dropdownDungeon:SetValues(dungeonList)
-
-        dropdownDungeon:OnChanged(function(selectedValues)
-            table.clear(targetDungeon)
-
-            for name, state in pairs(selectedValues) do
-                if state then
-                    table.insert(targetDungeon, name)
-                end
-            end
+        local toogleAutoRaid = tabs.Dungeon:AddToggle("toogleAutoRaid", {Title = "Auto Farm Raid", Default = false})
+        toogleAutoRaid:OnChanged(function()
+            isDungeon = toogleAutoRaid.Value
         end)
 
-        local dropdownRaid = tabs.Dungeon:AddDropdown("dropdownRaid", {
-            Title = "Raids",
-            Description = "Select Raids to auto farm",
-            Values = {},
-            Multi = true,
-            Default = {},
-        })
-        dropdownRaid:SetValues(raidList)
-
-        dropdownRaid:OnChanged(function(selectedValues)
-            table.clear(targetRaid)
-
-            for name, state in pairs(selectedValues) do
-                if state then
-                    table.insert(targetRaid, name)
-                end
-            end
-        end)
-
-        local dropdownDef = tabs.Dungeon:AddDropdown("dropdownDef", {
-            Title = "Defense",
-            Description = "Select Defense Mode to auto farm",
-            Values = {},
-            Multi = true,
-            Default = {},
-        })
-        dropdownDef:SetValues(defList)
-
-        dropdownDef:OnChanged(function(selectedValues)
-            table.clear(targetDef)
-
-            for name, state in pairs(selectedValues) do
-                if state then
-                    table.insert(targetDef, name)
-                end
-            end
-        end)
-
-        local toogleFarmDungeon = tabs.Dungeon:AddToggle("toogleFarmDungeon", {Title = "Auto Farm Dungeons/ Raids", Default = false})
-        toogleFarmDungeon:OnChanged(function()
-            isDungeon = toogleFarmDungeon.Value
-            if isDungeon then 
-                autoFarmDungeon()
-            end
-        end)
-
-        local teleportBackDropdown = tabs.Dungeon:AddDropdown("teleportBackDropdown", {
-            Title = "Auto Teleport to Map",
-            Description = "IF NOT IN DUNGEON OR RAID",
-            Values = {"None", "Naruto","DragonBall", "OnePiece", "DemonSlayer", "Paradis"},
-            Multi = false,
-            Default = "None",
-        })
-        
-        teleportBackDropdown:OnChanged(function(selectedValues)
-            teleportBackMap = selectedValues
-        end)
-
-        local inputTargetWaveRaid = tabs.Dungeon:AddInput("inputTargetWaveRaid", {
-            Title = "Target Wave (Raid)",
-            Description = "Leave after this wave",
-            Default = 500,
-            Placeholder = "Placeholder",
-            Numeric = true, -- Only allows numbers
-            Finished = true, -- Only calls callback when you press enter
-            Callback = function(Value)
-            end
-        })
-        inputTargetWaveRaid:OnChanged(function()
-            if inputTargetWaveRaid.Value == nil or not inputTargetWaveRaid.Value then
-                targetWaveRaid = 100 else
-                targetWaveRaid = tonumber(inputTargetWaveRaid.Value)
-            end
-        end)
-
-        local inputTargetWaveDef = tabs.Dungeon:AddInput("inputTargetWaveDef", {
-            Title = "Target Wave (Defense)",
-            Description = "Leave after this wave",
-            Default = 500,
-            Placeholder = "Placeholder",
-            Numeric = true, -- Only allows numbers
-            Finished = true, -- Only calls callback when you press enter
-            Callback = function(Value)
-            end
-        })
-        inputTargetWaveDef:OnChanged(function()
-            if inputTargetWaveDef.Value == nil or not inputTargetWaveDef.Value then
-                targetWaveDef = 100 else
-                targetWaveDef = tonumber(inputTargetWaveDef.Value)
-            end
-        end)
 
         -- SStronger
-        local toogleAutoAttack = tabs.Stronger:AddToggle("toogleAutoAttack", {Title = "Auto Attack/Grind", Default = false})
-        toogleAutoAttack:OnChanged(function()
-            isAutoAttack = toogleAutoAttack.Value
-            task.spawn(function() 
-               setAutoAttack()
-            end)
-        end)
         local toggleRank = tabs.Stronger:AddToggle("toggleRank", {Title = "Auto RankUp", Default = false})
         toggleRank:OnChanged(function()
             isRankUp = option1.toggleRank.Value
-            task.spawn(function() autoRankUp() end)
         end)
-        local toggleHatch = tabs.Stronger:AddToggle("toggleHatch", {Title = "Auto Gacha(nearby)", Default = false})
-        toggleHatch:OnChanged(function()
-            isHatch = option1.toggleHatch.Value
-            task.spawn(function() autoHatch() end)
+
+        local toogleExpedition = tabs.Stronger:AddToggle("toogleExpedition", {Title = "Auto Claim Heroes Expedition", Default = false})
+        toogleExpedition:OnChanged(function()
+            isAutoClaimExpedition = option1.toogleExpedition.Value
         end)
+
+        local expeditionDropdown = tabs.Stronger:AddDropdown("expeditionDropdown", {
+            Title = "Expedition Map: ",
+            Description = "Need to select heroes first",
+            Values = {},
+            Multi = false,
+            Default = "None",
+        })
+        task.spawn(function()
+            local nameSet =  {}
+            local res = {}
+            table.insert(res, "None")
+            for _, boss in ipairs(bossList) do
+                if nameSet[boss.map] == true then continue end
+                table.insert(res, boss.map)
+                nameSet[boss.map] = true
+            end
+            expeditionDropdown:SetValues(res)
+        end)
+        expeditionDropdown:OnChanged(function(selectedValues)
+            expeditionTarget = selectedValues
+        end)
+
+        local starDropdown = tabs.Stronger:AddDropdown("starDropdown", {
+            Title = "Auto Hatch (stay nearby star)",
+            Description = "Select Star World",
+            Values = {},
+            Multi = false,
+            Default = "None",
+        })
+        task.spawn(function()
+            local nameSet =  {}
+            local res = {}
+            table.insert(res, "None")
+            for _, boss in ipairs(bossList) do
+                if nameSet[boss.map] == true then continue end
+                table.insert(res, boss.map)
+                nameSet[boss.map] = true
+            end
+            starDropdown:SetValues(res)
+        end)
+        starDropdown:OnChanged(function(selectedValues)
+            targetStar = selectedValues
+        end)
+
+
         -- Player
         local close = tabs.Settings:AddParagraph({
             Title = "chat ONE LETTER on chat -> Gui will show/ hide",
