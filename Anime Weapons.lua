@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons" --0123adsadasd
+_G.Key = "AnimeWeapons" --asdasd
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -26,7 +26,6 @@ local targetWaveRaid = 500; local targetWaveDef = 500; local targetWaveDungeon =
 local gachaZone
 local attackRangePart 
 local attackRange 
-local isShadowGate
 
 local monsterList = {} ; local nameList = {}; local targetList = {}
 local dungeonList = {};   local raidList = {}; local defList = {}; 
@@ -502,8 +501,6 @@ local function checkFolderDungeonZones()
     local location = workspace.Zones:GetChildren()
     if location[1] and string.find(location[1].Name, "Dungeon:") and isPlayerInZone(location[1]) then return true end
     if #location ~= 1 and location[2] and string.find(location[2].Name, "Dungeon:") and isPlayerInZone(location[2]) then return true end
-    if location[1] and string.find(location[1].Name, "ShadowGate") and isPlayerInZone(location[1]) then return true end
-    if #location ~= 1 and location[2] and string.find(location[2].Name, "ShadowGate") and isPlayerInZone(location[2]) then return true end
     return false
 end
 
@@ -741,11 +738,6 @@ task.spawn(function()
             Reliable:FireServer(
                 "Heroes Gacha Auto"
             )     
-        end
-        if isShadowGate then
-            Reliable:FireServer(
-                "Open ShadowGate"
-            )
         end
         task.wait(1)
     end
@@ -1155,10 +1147,6 @@ end)
         toggleHatch:OnChanged(function()
             isHatch = option1.toggleHatch.Value
             task.spawn(function() autoHatch() end)
-        end)
-        local toggleShadowGate = tabs.Stronger:AddToggle("toggleShadowGate", {Title = "Auto Open Shadow Gate", Default = false})
-        toggleShadowGate:OnChanged(function()
-            isShadowGate = option1.toggleShadowGate.Value
         end)
         -- Player
         local close = tabs.Settings:AddParagraph({
