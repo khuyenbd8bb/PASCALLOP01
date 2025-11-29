@@ -1,4 +1,4 @@
-if  true then -- 123123
+if  true then
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -178,8 +178,6 @@ local function mine(rock)
 
     local headPos = getPosition(rock)
     local targetPosition = headPos + Vector3.new(0, hrpToFeet + safeHeight, 0)        
-    hrp.CFrame = CFrame.new(targetPosition)
-    hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(rock))
 
     local stillTarget = false
     for _, target in pairs(targetOreList) do
@@ -815,7 +813,7 @@ do
         InterfaceManager:BuildInterfaceSection(tabs.Settings)
         SaveManager:BuildConfigSection(tabs.Settings)
 
- 
+
         Window:SelectTab(1)
 
         -- You can use the SaveManager:LoadAutoloadConfig() to load a config
