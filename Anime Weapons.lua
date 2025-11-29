@@ -19,14 +19,15 @@ local distance = 10000
 local waveGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Raid.wave.amount
 local roomGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Dungeon.room.amount
 local defGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.Defense.wave.amount
+local shadowGui = game:GetService("Players").LocalPlayer.PlayerGui.Screen.Hud.gamemode.ShadowGate.wave.amount
 
-local waveRaid = 0;local waveDungeon = 0; local waveDef = 0;
-local targetWaveRaid = 500; local targetWaveDef = 500; local targetWaveDungeon = 500;
+local waveRaid = 0;local waveDungeon = 0; local waveDef = 0;local waveShadow = 0;
+local targetWaveRaid = 500; local targetWaveDef = 500; local targetWaveDungeon = 500; local targetWaveShadow = 500
 
 local gachaZone
 local attackRangePart 
 local attackRange 
-local isShadowGate
+local isShadowGate = false
 
 local monsterList = {} ; local nameList = {}; local targetList = {}
 local dungeonList = {};   local raidList = {}; local defList = {}; 
@@ -278,6 +279,12 @@ defGui:GetPropertyChangedSignal("Text"):Connect(function()
         waveDef = tonumber((string.gsub(defGui.Text, "Wave: ", "")))
     end
 end)
+shadowGui:GetPropertyChangedSignal("Text"):Connect(function()
+    waveShadow = tonumber((string.gsub(shadowGui.Text, "Room: ", "")))
+    if not waveShadow then
+        waveShadow = tonumber((string.gsub(shadowGui.Text, "Wave: ", "")))
+    end
+end)
 
 
 local function getDistance(obj1, obj2)
@@ -453,6 +460,13 @@ end
 
 --DDungeon
 local dontTeleport = false
+local function isPlayerInZone(zone)
+    local chars = zone:FindFirstChild("Characters")
+    if not chars then return false end
+    chars = chars:FindFirstChild(player.Name)
+    if not chars then return false end
+    return true
+end
 task.spawn(function()
     while true do
         if #workspace.Zones:GetChildren() == 0 or dontTeleport then
@@ -460,7 +474,7 @@ task.spawn(function()
             continue
         end
         local Map = workspace.Zones:GetChildren()[1].Name
-        if (Map == teleportBackMap) then
+        if (Map == teleportBackMap or isPlayerInZone(workspace.Zones:GetChildren()[1]) == false) then
             task.wait(6)
             continue
         end
@@ -490,13 +504,7 @@ local function teleportBack()
     task.wait(6)
 end
 
-local function isPlayerInZone(zone)
-    local chars = zone:FindFirstChild("Characters")
-    if not chars then return false end
-    chars = chars:FindFirstChild(player.Name)
-    if not chars then return false end
-    return true
-end
+
 
 local function checkFolderDungeonZones()
     local location = workspace.Zones:GetChildren()
@@ -743,6 +751,11 @@ task.spawn(function()
             )     
         end
         if isShadowGate then
+            if waveShadow > targetWaveShadow then 
+                waveShadow = 0
+                teleportBack()
+            end
+            task.wait(2)
             Reliable:FireServer(
                 "Open ShadowGate"
             )
@@ -1160,6 +1173,22 @@ end)
         toggleShadowGate:OnChanged(function()
             isShadowGate = option1.toggleShadowGate.Value
         end)
+        local inputTargetWaveShadow = tabs.Stronger:AddInput("inputTargetWaveShadow", {
+            Title = "Target Wave (ShadowGate)",
+            Description = "Leave after this wave",
+            Default = 500,
+            Placeholder = "Placeholder",
+            Numeric = true, -- Only allows numbers
+            Finished = true, -- Only calls callback when you press enter
+            Callback = function(Value)
+            end
+        })
+        inputTargetWaveShadow:OnChanged(function()
+            if inputTargetWaveShadow.Value == nil or not inputTargetWaveDef.Value then
+                targetWaveShadow = 100 else
+                targetWaveShadow = tonumber(inputTargetWaveShadow.Value)
+            end
+        end)
         -- Player
         local close = tabs.Settings:AddParagraph({
             Title = "chat ONE LETTER on chat -> Gui will show/ hide",
@@ -1211,7 +1240,7 @@ end)
         -- Ignore keys that are used by ThemeManager.
         -- (we dont want configs to save themes, do we?)
         SaveManager:IgnoreThemeSettings()
- 
+
         -- You can add indexes of elements the save manager should ignore
         SaveManager:SetIgnoreIndexes({})
 
