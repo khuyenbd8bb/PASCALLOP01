@@ -1,4 +1,4 @@
-if  true then -- GOGO
+if  true then --???
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -468,7 +468,7 @@ local function autoPotion()
                 target
             )
         end
-        task.wait(60)
+        task.wait(60 * 5 - 5)
     end
 end
 local function sellAllEquipment()
