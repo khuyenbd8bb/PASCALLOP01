@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons"
+_G.Key = "AnimeWeapons" --sd
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -574,7 +574,6 @@ local function killDungeon(monster)
 
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(0, hrpToFeet + safeHeight, -attackRange+8)        
-    hrp.CFrame = CFrame.new(targetPosition)
     while isDungeon and inDungeon and head.Transparency == 0 and monster and monster.Parent do
         if not hrp then 
             task.wait()
@@ -721,9 +720,9 @@ local function autoHatch()
             task.wait() 
             continue 
         end
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
         if getDistance(gachaZone, hrp) <= 8.5 and not HatchGui:FindFirstChild("CloseAutoOpen") then
-            local ReplicatedStorage = game:GetService("ReplicatedStorage")
-            local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
             Reliable:FireServer(
                 "Gacha Auto"
             )
@@ -731,6 +730,18 @@ local function autoHatch()
         task.wait()
     end
 end
+task.spawn(function()
+    while true do
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
+        if not HatchGui:FindFirstChild("CloseAutoOpen") and isHatch then
+            Reliable:FireServer(
+                "Heroes Gacha Auto"
+            )     
+        end
+        task.wait(1)
+    end
+end)
 
 -- LLocation 
 local function teleportTo(target)
@@ -1191,7 +1202,7 @@ end)
 
         -- You can add indexes of elements the save manager should ignore
         SaveManager:SetIgnoreIndexes({})
- 
+
         -- use case for doing it this way:
         -- a script hub could have themes in a global folder
         -- and game configs in a separate folder per game
