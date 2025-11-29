@@ -1,4 +1,4 @@
-if  true then -- 123
+if  true then
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -336,8 +336,8 @@ local function kill(monster)
     local status = monster:FindFirstChild("Status")
     monster = monster:FindFirstChild("HumanoidRootPart")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = -2
-    local xy = 1.5
+    local safeHeight = 2
+    local xy = 1
     local targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)        
     hrp.CFrame = CFrame.new(targetPosition)
     hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
@@ -506,11 +506,11 @@ local Window = Fluent:CreateWindow({
 })
 
 local tabs = {
-        Mine = Window:AddTab({ Title = "Mining", Icon = "pickaxe" }),
+        Mine = Window:AddTab({ Title = "Mining", Icon = "axe" }),
         Kill = Window:AddTab({ Title = "Killing", Icon = "swords" }),
         Sell = Window:AddTab({ Title = "Auto Sell/ Buy", Icon = "dollar-sign" }),
-        Teleport = Window:AddTab({ Title = "Teleport", Icon = "rabbit" }),
-        More = Window:AddTab({ Title = "Mores", Icon = "rabbit" }),
+        Teleport = Window:AddTab({ Title = "Teleport", Icon = "refresh-ccw" }),
+        More = Window:AddTab({ Title = "Mores", Icon = "plus" }),
         Settings = Window:AddTab({ Title = "Player Config", Icon = "user-cog" })
     }
     
