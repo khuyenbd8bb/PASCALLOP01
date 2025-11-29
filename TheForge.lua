@@ -1,4 +1,4 @@
-if  true then --123
+if  true then -- 123
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -6,6 +6,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Config-Library/main/Main.lua"))()
 local TextChatService = game:GetService("TextChatService")
 local OreFolder = game:GetService("ReplicatedStorage").Shared.Data.Ore
+local Potion = game:GetService("ReplicatedStorage").Assets.Extras.Potion
 
 local distance = 10000
 local playerSpeed = 30
@@ -18,7 +19,9 @@ local character = player.Character
 local humanoid = character:FindFirstChild("Humanoid")
 local hrp = character:FindFirstChild("HumanoidRootPart")
 
-
+local repeatTime = 1
+local locationList = {}; local locationNumber = {}; local locationTargetList = {}
+local isTeleportFarm = false
 local autoSellRarity = 0; local isFixAutoSell = false;
 local canSellFix = true
 local isFarm = false; local isMine = false; 
@@ -26,8 +29,44 @@ local isKill = false; local isSwing = false;
 local oreList = {} ; local nameOreList = {}; local targetOreList = {}
 local monsterList = {} ; local nameMonsterList = {}; local targetMonsterList = {}
 local oreSellList = {}; local oreSellTargetList = {};
+local potionList = {}; local targetPotion = {}; local isAutoPotion = false
 
 -- MAIN
+local function loadData()
+    local ok = true
+    
+    if not isfolder("TigerHubTF") or not isfile("TigerHubTF/locationList.json") then
+        makefolder("TigerHubTF")
+        writefile("TigerHubTF/locationList.json", "[]") -- Changed from {} to [] for array
+        ok = false
+    end
+    if not ok then return end
+
+
+    local monsterJsonContent = readfile("TigerHubTF/locationList.json")
+    local monsterTable = Library.Decode(monsterJsonContent)
+    locationList = monsterTable
+
+    for i, locationObj in ipairs(monsterTable) do
+        table.insert(locationNumber, locationObj.number)
+        
+        local posString = locationObj.pos
+        local x, y, z = posString:match("Vector3_%(([%d%.%-]+),%s*([%d%.%-]+),%s*([%d%.%-]+)%)")
+        
+        local dirString = locationObj.dir
+        local dx, dy, dz = dirString:match("Vector3_%(([%d%.%-]+),%s*([%d%.%-]+),%s*([%d%.%-]+)%)")
+        
+        if x and y and z and dx and dy and dz then
+            locationList[i] = {
+                number = locationObj.number,
+                pos = Vector3.new(tonumber(x), tonumber(y), tonumber(z)),
+                dir = Vector3.new(tonumber(dx), tonumber(dy), tonumber(dz))
+            }
+        end
+    end
+end
+
+loadData()
 local VirtualUser = game:GetService('VirtualUser')
 game:GetService('Players').LocalPlayer.Idled:Connect(function()
     VirtualUser:CaptureController()
@@ -36,7 +75,14 @@ end)
 
 table.insert(goodNPC, "Runemaker"); table.insert(goodNPC, "Enhancer");
 table.insert(goodNPC, "Miner Fred"); table.insert(goodNPC, "Sensei Moro");
-table.insert(goodNPC, "Greedy Cey");
+table.insert(goodNPC, "Greedy Cey");table.insert(goodNPC, "Marbles");
+
+for _, potion in pairs(Potion:GetChildren()) do
+    if string.find(potion.Name, "12") or string.find(potion.Name, "LVL") then continue end
+    if potion.ClassName == "Model" then
+        table.insert(potionList, potion.Name)
+    end
+end
 
 player.CharacterAdded:Connect(function(character)
     hrp = character:WaitForChild("HumanoidRootPart")
@@ -230,6 +276,37 @@ local function autoMine()
         task.wait()
     end
 end
+-- LLocation
+local function teleportTo(target)
+    for _, location in ipairs(locationList) do
+        if (location.number == target) then
+            
+            local Pos = location.pos
+            if (getPosition(hrp) - Pos).Magnitude  > distance then return end
+            local targetPosition = Pos        
+            hrp.CFrame = CFrame.new(targetPosition, targetPosition + location.dir)
+            break
+        end
+        task.wait()
+    end
+    task.wait(repeatTime)
+end
+local function autoTeleportFarm()
+    while isTeleportFarm do
+        for _, location in ipairs(locationTargetList) do
+            teleportTo(location)
+            task.wait()
+        end
+        task.wait()
+    end
+end
+local function addLocation()
+    local Position = hrp.Position
+    local size = #locationList
+    local dir = hrp.CFrame.LookVector
+    size = "Location #" .. tostring(size + 1)
+    table.insert(locationList, {number = size, pos = Position, dir = dir})
+end
 -- KKill
 local function resetMonsterList()
     local Monster = workspace.Living:GetChildren()
@@ -377,6 +454,26 @@ task.spawn(function()
     task.wait(1)
    end
 end)
+local function autoPotion()
+    while isAutoPotion do
+        for _, target in pairs(targetPotion) do
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local Purchase = ReplicatedStorage.Shared.Packages.Knit.Services.ProximityService.RF.Purchase -- RemoteFunction 
+            Purchase:InvokeServer(
+                target,
+                1
+            )
+            task.wait(1)
+            local ToolActivated = ReplicatedStorage.Shared.Packages.Knit.Services.ToolService.RF.ToolActivated -- RemoteFunction 
+
+            ToolActivated:InvokeServer(
+                target
+            )
+        end
+        task.wait(60)
+    end
+end
+
 
 -- TTeleport
 local function teleportToNPC(npcTarget)
@@ -411,7 +508,7 @@ local Window = Fluent:CreateWindow({
 local tabs = {
         Mine = Window:AddTab({ Title = "Mining", Icon = "pickaxe" }),
         Kill = Window:AddTab({ Title = "Killing", Icon = "swords" }),
-        Sell = Window:AddTab({ Title = "Auto Sell", Icon = "dollar-sign" }),
+        Sell = Window:AddTab({ Title = "Auto Sell/ Buy", Icon = "dollar-sign" }),
         Teleport = Window:AddTab({ Title = "Teleport", Icon = "rabbit" }),
         More = Window:AddTab({ Title = "Mores", Icon = "rabbit" }),
         Settings = Window:AddTab({ Title = "Player Config", Icon = "user-cog" })
@@ -444,7 +541,6 @@ do
             MultiDropdownOre:SetValue({})
             resetRockList() 
             MultiDropdownOre:SetValues(nameOreList)
-            Library:SaveConfig("TigerHubForge/oreList.json", nameOreList)
         end
     })
     MultiDropdownOre:SetValues(nameOreList)
@@ -462,6 +558,79 @@ do
     toogleMine:OnChanged(function()
         isMine = toogleMine.Value
     end)
+    local mineSection1 = tabs.Mine:AddSection("Location Teleport")
+    -- LLocation
+    local locationDropdown = tabs.Mine:AddDropdown("locationDropdown", {
+        Title = "Location Selection",
+        Description = "Select Location to teleport",
+        Values = {},
+        Multi = true,
+        Default = {},
+    })
+    
+    locationDropdown:OnChanged(function(selectedValues)
+        table.clear(locationTargetList)
+        for number, state in pairs(selectedValues) do
+            if state then
+                table.insert(locationTargetList, number)
+            end
+        end
+    end)
+
+    
+    local addLocation = tabs.Mine:AddButton({
+        Title = "Add Location to dropdown",
+        Description = "your currently position",
+        Callback = function() 
+            addLocation()
+            locationDropdown:SetValue({})
+            local list = {}
+            for _, location in ipairs(locationList) do
+                table.insert(list, location.number)
+            end
+            locationDropdown:SetValues(list)
+            Library:SaveConfig("TigerHubTF/locationList.json", locationList)
+        end
+    })
+
+    locationDropdown:SetValues(locationNumber)
+    
+    local toogleTeleport = tabs.Mine:AddToggle("toogleTeleport", {Title = "Auto Teleport accross all ur location", Default = false})
+    toogleTeleport:OnChanged(function()
+        isTeleportFarm = toogleTeleport.Value
+        if (isTeleportFarm) then
+            task.spawn(function() 
+                autoTeleportFarm()
+            end)
+        end
+    end)
+    
+    local teleportSpeed = tabs.Mine:AddInput("teleportSpeed", {
+        Title = "Teleport Delay (Seconds)",
+        Default = 2,
+        Placeholder = "Placeholder",
+        Numeric = true, -- Only allows numbers
+        Finished = false, -- Only calls callback when you press enter
+        Callback = function(Value)
+        end
+    })
+
+    teleportSpeed:OnChanged(function()
+        if teleportSpeed.Value == nil or teleportSpeed.Value == "" then
+            repeatTime = 1 else
+            repeatTime = math.max(teleportSpeed.Value, 0.3)
+        end
+    end)
+
+    local clearLocation = tabs.Mine:AddButton({
+        Title = "Clear all location",
+        Description = "W Farm",
+        Callback = function() 
+            locationDropdown:SetValues({})
+            table.clear(locationList)
+            Library:SaveConfig("TigerHubTF/locationList.json", locationList)
+        end
+    })
     -- KKill
     local MultiDropdownMonster = tabs.Kill:AddDropdown("MultiDropdownMonster", {
         Title = "Select Monster",
@@ -487,7 +656,6 @@ do
             MultiDropdownMonster:SetValue({})
             resetMonsterList() 
             MultiDropdownMonster:SetValues(nameMonsterList)
-            Library:SaveConfig("TigerHubForge/monsterList.json", nameMonsterList)
         end
     })
     MultiDropdownMonster:SetValues(nameMonsterList)
@@ -533,6 +701,28 @@ do
             teleSell()
         end
     })
+    local potionSection = tabs.Sell:AddSection("Potions")
+    local MultiDropdownPotion = tabs.Sell:AddDropdown("MultiDropdownPotion", {
+        Title = "Potion auto buy/ use after 5 min",
+        Description = "auto buy/ use after 5 min",
+        Values = {},
+        Multi = true,
+        Default = {},
+    })
+    MultiDropdownPotion:SetValues(potionList)
+    MultiDropdownPotion:OnChanged(function(selectedValues)
+        table.clear(targetPotion)
+        for name, state in pairs(selectedValues) do
+            if state then
+                table.insert(targetPotion, name)
+            end
+        end        
+    end)
+    local toogleAutoPotion = tabs.Sell:AddToggle("toogleAutoPotion", {Title = "Enable Auto Potion", Default = false})
+    toogleAutoPotion:OnChanged(function()
+        isAutoPotion = toogleAutoPotion.Value
+        if isAutoPotion then task.spawn(function() autoPotion() end) end
+    end)
     -- TTeleport
     for _, npc1 in pairs(workspace.Proximity:GetChildren()) do
         for _, npc2 in pairs(goodNPC) do
