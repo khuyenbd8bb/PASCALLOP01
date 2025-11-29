@@ -1,4 +1,4 @@
-if  true then
+if  true then -- GOGO
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -7,7 +7,7 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Exuny
 local TextChatService = game:GetService("TextChatService")
 local OreFolder = game:GetService("ReplicatedStorage").Shared.Data.Ore
 local Potion = game:GetService("ReplicatedStorage").Assets.Extras.Potion
-
+local Tool = game:GetService("Players").LocalPlayer.PlayerGui.Menu.Frame.Frame.Menus.Tools.Frame
 local distance = 10000
 local playerSpeed = 30
 local goodNPC = {}; local allNPC = {}; buttonNPC = {}
@@ -471,7 +471,21 @@ local function autoPotion()
         task.wait(60)
     end
 end
-
+local function sellAllEquipment()
+    for _, tool in pairs(Tool:GetChildren()) do
+        tool = tool.name
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local RunCommand = ReplicatedStorage.Shared.Packages.Knit.Services.DialogueService.RF.RunCommand 
+        RunCommand:InvokeServer(
+            "SellConfirm",
+            {
+                Basket = {
+                    [tool] = true
+                }
+            }
+        )
+    end
+end
 
 -- TTeleport
 local function teleportToNPC(npcTarget)
@@ -692,11 +706,27 @@ do
     toogleAutoSellFix:OnChanged(function()
         isFixAutoSell = toogleAutoSellFix.Value
     end)
-    local SellButton = tabs.Sell:AddButton({
+    local sellButton = tabs.Sell:AddButton({
         Title = "Click this if its not autosell",
         Description = "",
         Callback = function() 
             teleSell()
+        end
+    })
+    local sellEquipmentButton = tabs.Sell:AddButton({
+        Title = "RISKY RISKY! SELL ALL unequipped equipments",
+        Description = "",
+        Callback = function() 
+            local pos = hrp.Position
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local Dialogue = ReplicatedStorage.Shared.Packages.Knit.Services.ProximityService.RF.Dialogue -- RemoteFunction 
+            local Marbles = workspace.Proximity["Marbles"]
+            Dialogue:InvokeServer(
+                Marbles
+            )
+            task.wait(1)
+            hrp.CFrame = CFrame.new(pos)
+            sellAllEquipment()
         end
     })
     local potionSection = tabs.Sell:AddSection("Potions")
@@ -721,6 +751,7 @@ do
         isAutoPotion = toogleAutoPotion.Value
         if isAutoPotion then task.spawn(function() autoPotion() end) end
     end)
+    
     -- TTeleport
     for _, npc1 in pairs(workspace.Proximity:GetChildren()) do
         for _, npc2 in pairs(goodNPC) do
@@ -806,7 +837,7 @@ do
 
         -- use case for doing it this way:
         -- a script hub could have themes in a global folder
-        -- and game configs in a separate folder per game 
+        -- and game configs in a separate folder per game
         InterfaceManager:SetFolder("TigerHubConfig")
         SaveManager:SetFolder("TigerHubConfig/Forge")
 
