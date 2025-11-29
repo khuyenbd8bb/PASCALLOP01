@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons" --sd
+_G.Key = "AnimeWeapons" --asdasd
 local key = _G.Key
 local Access = "AnimeWeapons"
 
