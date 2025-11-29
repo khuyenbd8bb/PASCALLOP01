@@ -814,7 +814,7 @@ do
         SaveManager:BuildConfigSection(tabs.Settings)
 
 
-        Window:SelectTab(1) 
+        Window:SelectTab(1)
 
         -- You can use the SaveManager:LoadAutoloadConfig() to load a config
         -- which has been marked to be one that auto loads!
