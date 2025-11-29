@@ -806,7 +806,7 @@ do
 
         -- use case for doing it this way:
         -- a script hub could have themes in a global folder
-        -- and game configs in a separate folder per game
+        -- and game configs in a separate folder per game 
         InterfaceManager:SetFolder("TigerHubConfig")
         SaveManager:SetFolder("TigerHubConfig/Forge")
 
