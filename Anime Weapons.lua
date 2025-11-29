@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons"
+_G.Key = "AnimeWeapons" -- hi
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -120,6 +120,10 @@ task.spawn(function()
         VirtualUser:ClickButton2(Vector2.new())
         task.wait(60)
     end
+    game:GetService('Players').LocalPlayer.Idled:Connect(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
 end)
 
 local function setAutoAttack()
@@ -257,8 +261,20 @@ local hrp = FindHRP(player)
 local humanoid = FindHumanoid(player)
 
 player.CharacterAdded:Connect(function(character)
-    hrp = character:WaitForChild("HumanoidRootPart")
-    humanoid = character:WaitForChild("Humanoid")
+    hrp = character:WaitForChild("HumanoidRootPart", 2)
+    humanoid = character:FindFirstChildOfClass("Humanoid") 
+        or character:WaitForChild("Humanoid", 2)
+    if not hrp then
+        return
+    end
+    if not humanoid then
+        task.delay(1, function()
+            humanoid = character:FindFirstChildOfClass("Humanoid")
+        end)
+        if not humanoid then
+            return
+        end
+    end
     print("Character updated!")
 end)
 
@@ -473,8 +489,14 @@ task.spawn(function()
             task.wait(6)
             continue
         end
-        local Map = workspace.Zones:GetChildren()[1].Name
-        if (Map == teleportBackMap or isPlayerInZone(workspace.Zones:GetChildren()[1]) == false) then
+        local Map = workspace.Zones:GetChildren()
+        local canContinue = false
+        for _, map in pairs(Map) do
+            if (map.Name == teleportBackMap and isPlayerInZone(map) == true) then
+                canContinue = true
+            end
+        end
+        if canContinue then
             task.wait(6)
             continue
         end
@@ -552,9 +574,11 @@ end
 
 task.spawn(function()
     while true do
-        inDungeon = checkFolderDungeonZones()
-        if inDungeon == false then inDungeon = checkFolderRaidZones() end
-        if inDungeon == false then inDungeon = checkFolderDefZones() end
+        inDungeon =
+            checkFolderDungeonZones() 
+            or checkFolderRaidZones() 
+            or checkFolderDefZones()
+            or false 
         if (inDungeon and mode == "Damage") or (inDungeon == false and mode == "Mastery") or isAutoEquipPower == false then 
             task.wait()
         else 
@@ -607,13 +631,19 @@ local function checkDungeon()
         local monsters = workspace.Enemies:GetChildren()
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
-            if not Head or Head.Transparency ~= 0 then continue end
+            if not Head or Head.Transparency ~= 0 then 
+                task.wait()
+                continue 
+            end
             if not hrp then 
                 task.wait()
                 continue
             end
             local dis = getDistance(hrp, monster)
-            if dis >= distance or dis <= attackRange then continue end
+            if dis >= distance or dis <= attackRange then 
+                task.wait()
+                continue 
+            end
             killDungeon(monster)
             task.wait()
         end
@@ -725,22 +755,6 @@ local function autoRankUp()
     end 
 end
 
-local function autoHatch()
-    while isHatch do
-        if not gachaZone or typeof(gachaZone) ~= "Instance" or typeof(hrp) ~= "Instance" then 
-            task.wait() 
-            continue 
-        end
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local Reliable = ReplicatedStorage.Reply.Reliable -- RemoteEvent 
-        if getDistance(gachaZone, hrp) <= 8.5 and not HatchGui:FindFirstChild("CloseAutoOpen") then
-            Reliable:FireServer(
-                "Gacha Auto"
-            )
-        end 
-        task.wait()
-    end
-end
 task.spawn(function()
     while true do
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -748,14 +762,19 @@ task.spawn(function()
         if not HatchGui:FindFirstChild("CloseAutoOpen") and isHatch then
             Reliable:FireServer(
                 "Heroes Gacha Auto"
-            )     
+            )    
+            Reliable:FireServer(
+                "Gacha Auto"
+            )
         end
+        
         if isShadowGate then
+            task.wait(1)
             if waveShadow > targetWaveShadow then 
                 waveShadow = 0
                 teleportBack()
             end
-            task.wait(2)
+            task.wait(1)
             Reliable:FireServer(
                 "Open ShadowGate"
             )
@@ -777,6 +796,7 @@ local function teleportTo(target)
             hrp.CFrame = CFrame.new(targetPosition)
             break
         end
+        task.wait()
     end
     task.wait(repeatTime)
 end
@@ -788,6 +808,7 @@ local function autoTeleportFarm()
         end
         for _, location in ipairs(locationTargetList) do
             teleportTo(location)
+            task.wait()
         end
         if inDungeon == false and isTeleportHatch and gachaZone and typeof(gachaZone) == "Instance" and typeof(hrp) == "Instance"  then
             local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
@@ -798,7 +819,6 @@ local function autoTeleportFarm()
             hrp.CFrame = CFrame.new(targetPosition)
             task.wait(0.5)
         end
-
         task.wait()
     end
 end
@@ -926,7 +946,6 @@ end)
         local toogleFarm = tabs.Main:AddToggle("toogleFarm", {Title = "Auto Farm Selected Enemies", Default = false})
         toogleFarm:OnChanged(function()
             keepRunning = toogleFarm.Value
-            isKilling = false
             if (toogleFarm.Value) then
                 task.spawn(function() 
                     autoFarm()
@@ -1167,7 +1186,6 @@ end)
         local toggleHatch = tabs.Stronger:AddToggle("toggleHatch", {Title = "Auto Gacha(nearby)", Default = false})
         toggleHatch:OnChanged(function()
             isHatch = option1.toggleHatch.Value
-            task.spawn(function() autoHatch() end)
         end)
         local toggleShadowGate = tabs.Stronger:AddToggle("toggleShadowGate", {Title = "Auto Open Shadow Gate", Default = false})
         toggleShadowGate:OnChanged(function()
