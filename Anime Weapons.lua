@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons" -- solorank
+_G.Key = "AnimeWeapons" -- new anti kick
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -114,16 +114,22 @@ task.spawn(function()
                 if info.source and string.find(info.source, "AutoReconnect.c") then deepScan(func, "Main") end
         end
     end
-    local VirtualUser = game:GetService('VirtualUser')
-    while true do
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-        task.wait(60)
-    end
-    game:GetService('Players').LocalPlayer.Idled:Connect(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end)
+    local GC = getconnections or get_signal_cons
+	if GC then
+		for i,v in pairs(GC(Players.LocalPlayer.Idled)) do
+			if v["Disable"] then
+				v["Disable"](v)
+			elseif v["Disconnect"] then
+				v["Disconnect"](v)
+			end
+		end
+	else
+		Players.LocalPlayer.Idled:Connect(function()
+			local VirtualUser = game:GetService("VirtualUser")
+			VirtualUser:CaptureController()
+			VirtualUser:ClickButton2(Vector2.new())
+		end)
+	end
 end)
 
 local function setAutoAttack()
