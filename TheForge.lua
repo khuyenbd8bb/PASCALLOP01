@@ -1,4 +1,4 @@
-if  true then -- tween + anti afk
+if  true then --???
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -227,9 +227,9 @@ local function mine(rock)
     
     local name = rock.Parent.Name
     --hidePlayer(false)
-    tweenTo( targetPosition)
+    
     while isFarm and stillTarget and rock and rock.Parent do
-       
+       tweenTo( targetPosition)
         if string.sub(hp.Text, 1, 1) == "0" then break end
         
         if not hrp then 
