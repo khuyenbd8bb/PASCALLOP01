@@ -1,4 +1,4 @@
-if  true then --tween
+if  true then -- tween 2
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -217,8 +217,6 @@ local function mine(rock)
     --hidePlayer(false)
     tweenTo( targetPosition)
     while isFarm and stillTarget and rock and rock.Parent do
-        --hrp.CFrame = CFrame.new(targetPosition)
-       -- hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(rock))
        
         if string.sub(hp.Text, 1, 1) == "0" then break end
         
@@ -524,7 +522,7 @@ local function teleportToNPC(npcTarget)
         if (npc1.Name == npcTarget) then
             local addHeight = 2
             local targetPosition = getPosition(npc1) + Vector3.new(0, 2 , 0)        
-            hrp.CFrame = CFrame.new(targetPosition)
+            tweenTo(targetPosition)
         end
     end
 end
@@ -748,7 +746,6 @@ do
         Title = "RISKY RISKY! SELL ALL unequipped equipments",
         Description = "",
         Callback = function() 
-            local pos = hrp.Position
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
             local Dialogue = ReplicatedStorage.Shared.Packages.Knit.Services.ProximityService.RF.Dialogue -- RemoteFunction 
             local Marbles = workspace.Proximity["Marbles"]
@@ -756,7 +753,6 @@ do
                 Marbles
             )
             task.wait(1)
-            hrp.CFrame = CFrame.new(pos)
             sellAllEquipment()
         end
     })
