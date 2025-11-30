@@ -1,4 +1,4 @@
-if  true then -- tweenKing
+if  true then -- tween + anti afk
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -34,6 +34,7 @@ local oreSellList = {}; local oreSellTargetList = {};
 local potionList = {}; local targetPotion = {}; local isAutoPotion = false
 
 -- MAIN
+
 local function loadData()
     local ok = true
     
@@ -69,11 +70,22 @@ local function loadData()
 end
 
 loadData()
-local VirtualUser = game:GetService('VirtualUser')
-game:GetService('Players').LocalPlayer.Idled:Connect(function()
-    VirtualUser:CaptureController()
-    VirtualUser:ClickButton2(Vector2.new())
-end)
+local GC = getconnections or get_signal_cons
+if GC then
+    for i,v in pairs(GC(Players.LocalPlayer.Idled)) do
+        if v["Disable"] then
+            v["Disable"](v)
+        elseif v["Disconnect"] then
+            v["Disconnect"](v)
+        end
+    end
+else
+    Players.LocalPlayer.Idled:Connect(function()
+        local VirtualUser = game:GetService("VirtualUser")
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
+end
 
 table.insert(goodNPC, "Runemaker"); table.insert(goodNPC, "Enhancer");
 table.insert(goodNPC, "Miner Fred"); table.insert(goodNPC, "Sensei Moro");
