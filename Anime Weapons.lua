@@ -1,4 +1,4 @@
-_G.Key = "AnimeWeapons" -- hi
+_G.Key = "AnimeWeapons" -- solorank
 local key = _G.Key
 local Access = "AnimeWeapons"
 
@@ -840,6 +840,7 @@ table.insert(powerList, {name = "DemonArt", auto = false})
 table.insert(powerList, {name = "Titan", auto = false})
 table.insert(powerList, {name = "Organization", auto = false})
 table.insert(powerList, {name = "Shadow", auto = false})
+table.insert(powerList, {name = "SoloRanks", auto = false})
 
 local function changePower(name, value)
     for _, power in pairs(powerList) do
