@@ -1,4 +1,4 @@
-if  true then --???
+if  true then --tween
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -11,6 +11,8 @@ local Tool = game:GetService("Players").LocalPlayer.PlayerGui.Menu.Frame.Frame.M
 local distance = 10000
 local playerSpeed = 30
 local goodNPC = {}; local allNPC = {}; buttonNPC = {}
+local TweenService = game:GetService("TweenService")
+
 
 
 local Players = game:GetService("Players")
@@ -172,9 +174,25 @@ local function resetRockList()
         end
     end
 end
+local function tweenTo( targetPosition)
+    local distance = (hrp.Position - targetPosition).Magnitude
+    local speed = 30
+    local duration = distance / speed -- calculate time based on speed
+    
+    local tweenInfo = TweenInfo.new(
+        duration,
+        Enum.EasingStyle.Linear,
+        Enum.EasingDirection.Out
+    )
+
+    local goal = {CFrame = CFrame.new(targetPosition, targetPosition + hrp.CFrame.LookVector)}
+    local tween = TweenService:Create(hrp, tweenInfo, goal)
+    tween:Play()
+    task.wait(math.max(duration, 0.5))
+end
 local function mine(rock)
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
-    local safeHeight = -7
+    local safeHeight = 2
 
     local headPos = getPosition(rock)
     local targetPosition = headPos + Vector3.new(0, hrpToFeet + safeHeight, 0)        
@@ -195,18 +213,15 @@ local function mine(rock)
     hp = hp:FindFirstChild("rockHP")
     if not hp then return end
     
-    local alive = true
     local name = rock.Parent.Name
-    local connection 
-    connection = hp:GetPropertyChangedSignal("Text"):Connect(function()
-        if string.sub(hp.Text, 1, 1) == "0" then
-            alive = false
-            connection:Disconnect()
-        end
-    end)
-    while isFarm and stillTarget and alive do
-        hrp.CFrame = CFrame.new(targetPosition)
-        hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(rock))
+    --hidePlayer(false)
+    tweenTo( targetPosition)
+    while isFarm and stillTarget and rock and rock.Parent do
+        --hrp.CFrame = CFrame.new(targetPosition)
+       -- hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(rock))
+       
+        if string.sub(hp.Text, 1, 1) == "0" then break end
+        
         if not hrp then 
             task.wait()
             continue
@@ -225,10 +240,14 @@ local function mine(rock)
         if isFixAutoSell and canSellFix then break end
         task.wait()
     end
+    --hidePlayer(true)
+    
 end
 local function checkOre()
     local Rock = getAllDescendants(workspace.Rocks)
-
+    local shortestRock = false
+    local shortestDistance = 10000000000000
+    
     for _, rock in pairs(Rock) do
         if isFixAutoSell and canSellFix then break end
         if rock.Name == "Hitbox" then
@@ -236,7 +255,13 @@ local function checkOre()
                 task.wait()
                 continue 
             end
-
+            local hp = rock.Parent:FindFirstChild("infoFrame")
+            if not hp then continue end
+            hp = hp:FindFirstChild("Frame")
+            if not hp then continue end
+            hp = hp:FindFirstChild("rockHP")
+            if not hp then continue end
+            if string.sub(hp.Text, 1, 1) == "0" then continue end
             local hitbox = rock.Parent
             if not hitbox then 
                 task.wait()
@@ -249,14 +274,18 @@ local function checkOre()
             end
             local dis = getDistance(hrp, rock)
             if dis >= distance then continue end
-
+            if isFarm == false then break end
+            
             for _, target in ipairs(targetOreList) do
-                if (target == name) then
-                    mine(rock)
+                if (target == name and dis < shortestDistance) then
+                    shortestRock = rock
+                    shortestDistance = dis
+                    break
                 end
             end
         end
     end
+    if shortestRock ~= false then mine(shortestRock) end
     if isFixAutoSell then 
         if not canSellFix then return end
         teleSell() 
@@ -278,7 +307,6 @@ end
 local function teleportTo(target)
     for _, location in ipairs(locationList) do
         if (location.number == target) then
-            
             local Pos = location.pos
             if (getPosition(hrp) - Pos).Magnitude  > distance then return end
             local targetPosition = Pos        
@@ -292,7 +320,7 @@ end
 local function autoTeleportFarm()
     while isTeleportFarm do
         for _, location in ipairs(locationTargetList) do
-            teleportTo(location)
+            --teleportTo(location)
             task.wait()
         end
         task.wait()
@@ -337,8 +365,6 @@ local function kill(monster)
     local safeHeight = -2
     local xy = 2
     local targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)        
-    hrp.CFrame = CFrame.new(targetPosition)
-    hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
     local stillTarget = false
     for _, target in pairs(targetMonsterList) do
         if not monster  then return end
@@ -353,7 +379,8 @@ local function kill(monster)
     
     if not status then return end
     while isKill and stillTarget and alive and monster and monster.Parent do
-        hrp.CFrame = CFrame.new(targetPosition)
+        tweenTo( targetPosition)
+        hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
         if not hrp then 
             task.wait()
             continue
@@ -370,14 +397,14 @@ local function kill(monster)
             end
         end
         targetPosition = getPosition(monster) + Vector3.new(xy, hrpToFeet + safeHeight, xy)   
-        hrp.CFrame = CFrame.new(targetPosition)
-        hrp.CFrame = CFrame.lookAt(targetPosition, getPosition(monster))
         if status:FindFirstChild("Dead") then alive = false end
         task.wait()
     end
 end
 local function checkKill()
     local Monster = workspace.Living:GetChildren()
+    local shortestMonster = false
+    local shortestDistance = 10000000000000
     for _, monster in pairs(Monster) do
         if not Players:FindFirstChild(monster.Name) then
             local hitBox = monster:FindFirstChild("HumanoidRootPart")
@@ -390,18 +417,22 @@ local function checkKill()
             end
             local dis = getDistance(hrp, hitBox)
             if dis >= distance then continue end
-
+            
+            
             for _, target in ipairs(targetMonsterList) do
-                if (target == name) then
+                if (target == name and dis < shortestDistance) then
                     local status = monster:FindFirstChild("Status")
                     if not status then continue end
                     status = status:FindFirstChild("Dead")
                     if status then continue end 
-                    kill(monster)
+                    shortestMonster = monster
+                    shortestDistance = dis
+                    break
                 end
             end
         end
     end
+    if shortestMonster ~= false then kill(shortestMonster) end
 end
 local function autoKill()
     while isKill do
