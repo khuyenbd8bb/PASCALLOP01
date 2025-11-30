@@ -1,79 +1,79 @@
-if true then
+if game.PlaceId == 105716258039711 then
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Config-Library/main/Main.lua"))()
 local TextChatService = game:GetService("TextChatService")
-local HatchGui = game:GetService("Players").LocalPlayer.PlayerGui
-
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local character = player.Character
 local hrp = character:FindFirstChild("HumanoidRootPart")
 local humanoid = character:FindFirstChild("Humanoid")
 
-
-local distance = 1000
-local farm2Delay = 0.1
-local waveGui = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Gamemodes.Raid.Background.Wave
-local roomGui = game:GetService("Players").LocalPlayer.PlayerGui
-local defGui = game:GetService("Players").LocalPlayer.PlayerGui
-
-local waveRaid = 0;local waveDungeon = 0; local waveDef = 0;
-local targetWaveRaid = 500; local targetWaveDef = 500; local targetWaveDungeon = 500;
-
-local gachaZone
+--MMain
+local HatchGui = game:GetService("Players").LocalPlayer.PlayerGui
 local attackRangePart 
-local attackRange 
+local distance = 10000
+local farm2Delay = 0.1
 local dontTeleport
-local monsterList = {} -- Name, HumanoidRoot
-local nameList = {} -- Table HUB
-local targetList = {}
-local dungeonList = {};   local raidList = {}; local defList = {}; 
-local targetDungeon = {}; local targetRaid = {}; local targetDef = {};
-local dungeonNumber = {}; local raidNumber = {}; local defNumber = {};
-local dungeonTime  =  {}; local raidTime  =  {}; local defTime = {};
+local gachaZone
+local attackRange 
+local inGamemode
+-- FFarm
+local monsterList = {};local nameList = {};local targetList = {}
 local isAutoJoinRaid = false; 
-local isAutoClaimExpedition = false;
-local powerList = {}; 
-local tooglePower = {}; local toogleBoss = {}; local toogleStar = {}
-local targetStar; local expeditionTarget;
-local teleportBackBossMap = "None";  
-
-local isTele = false
-local repeatTime = 1
 local locationList = {}; local locationNumber = {}; 
 local locationTargetList = {}
 local isTeleportFarm = false
-local isTeleportHatch = false
-
+--Boss
+local toogleBoss = {}; local bossList = {};
+-- DDungeon, Raid, Trial
+local trialGui = game:GetService("StarterGui").Interface.HUD.Gamemodes.TrialEasy.Background.Wave
+local waveRaid = 0;local waveDungeon = 0; local waveDef = 0; local waveTrial = 0;
+local targetWaveRaid = 500; local targetWaveDef = 500; 
+local targetWaveDungeon = 500; local targetWaveTrial = 500;
+local trialList = {}; local targetTrial = {};
+local isTrial = false
+-- PPowers
+local powerList = {}; local tooglePower = {};
+--SStronger
+local isAutoClaimExpedition = false;
+local toogleStar = {}
+local targetStar; local expeditionTarget;
+local teleportBackMap = "None";  
+local isTele = false
+local repeatTime = 1
 local isHatch = false
-local inDungeon = false --
-local isDungeon = false
 local isFarm1 = false
 local isFarm2 = false
 local isRankUp = false
-local isFuse = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
-
-
 local isAutoAttack = false
+--WWaveGui
+trialGui:GetPropertyChangedSignal("Text"):Connect(function()
+    waveTrial = tonumber((string.gsub(trialGui.Text, "Wave ", "")))
+end)
+--table
 table.insert(powerList, {name = "Hero Rank", auto = false})
 table.insert(powerList, {name = "Ninja Rank", auto = false})
 table.insert(powerList, {name = "Haki", auto = false})
 table.insert(powerList, {name = "Passive", auto = false})
 table.insert(powerList, {name = "Clan", auto = false})
 
-local isBoss = false
-local bossList = {
+bossList = {
     {name = "Sea King", map = "XYZ Metropolis", kill = false},
-    {name = "Cosmic Garou", map = "XYZ Metropolis", kill = false},
-    {name = "Itachi", map = "Ninja Village", kill = false},
-    {name = "Konan", map = "Ninja Village", kill = false},
-    {name = "Robin Lucci", map = "Forgotten Shore", kill = false},
-    {name = "Hantengu", map = "Slayer Forest", kill = false}
+    {name = "Cosmic Garo", map = "XYZ Metropolis", kill = false},
+    {name = "Itachu", map = "Ninja Village", kill = false},
+    {name = "Nanko", map = "Ninja Village", kill = false},
+    {name = "Luciu", map = "Forgotten Shore", kill = false},
+    {name = "Hawkeye", map = "Forgotten Shore", kill = false},
+    {name = "Hantengo", map = "Slayer Forest", kill = false},
+    {name = "Kokushibe", map = "Slayer Forest", kill = false}
 }
-
+-- TTrial
+trialList = {
+    {name = "TrialEasy", time = 15}
+}
 -- Main
 task.spawn(function()
     local ok = true
@@ -228,7 +228,7 @@ local function teleportToMap(map)
             "\2"
         }
     )
-    task.wait(3)
+    task.wait(5)
     isTele = false
 end
 local function killBoss(boss, index)
@@ -238,18 +238,11 @@ local function killBoss(boss, index)
         local head = monster:FindFirstChild("Head")
         local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
         local safeHeight = -2
-    
         local headPos = getPosition(head)
         local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
-        hrp.CFrame = CFrame.new(targetPosition)
-
-        local alive = true
-        local connection 
-        connection = head:GetPropertyChangedSignal("Transparency"):Connect(function()
-            alive = false
-            connection:Disconnect()
-        end)
-        while isBoss and  alive and bossList[index].kill do
+    
+        while inGamemode and bossList[index].kill do
+            if head.Transparency ~= 0 then break end
             hrp.CFrame = CFrame.new(targetPosition)
             if not hrp then 
                 task.wait()
@@ -273,19 +266,14 @@ local function foundBoss(text)
     return false
 end
 TextChatService.MessageReceived:Connect(function(message)
-    if foundBoss(message.Text) == false then 
-        warn(message.Text)
-    end
     if not message or foundBoss(message.Text) == false or isBoss then return end
-    warn("true")
-    isBoss = true
+    inGamemode = true
     task.wait(0.5)
     local boss = foundBoss(message.Text)
     teleportToMap(bossList[boss].map)
     killBoss(bossList[boss].name, boss)
-    task.wait(3)
-    teleportToMap(teleportBackBossMap)
-    isBoss = false
+    teleportToMap(teleportBackMap)
+    inGamemode = false
 end)
 --FFarm
 local function resetEnemiesList()
@@ -315,7 +303,6 @@ local function kill(monster)
     local head = monster:FindFirstChild("Head")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
     local safeHeight = -2
-    --local alive = head.Transparency
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
     hrp.CFrame = CFrame.new(targetPosition)
@@ -328,13 +315,8 @@ local function kill(monster)
             break;
         end
     end   
-    local alive = true
-    local connection 
-    connection = head:GetPropertyChangedSignal("Transparency"):Connect(function()
-        alive = false
-        connection:Disconnect()
-    end)
-    while isFarm1 and stillTarget  and alive do
+    while isFarm1 and stillTarget and inGamemode == false do
+        if head.Transparency ~= 0 then break end
         hrp.CFrame = CFrame.new(targetPosition)
         if not hrp then 
             task.wait()
@@ -359,7 +341,6 @@ local function kill2(monster)
     local head = monster:FindFirstChild("Head")
     local hrpToFeet = (hrp.Size.Y / 2) + (humanoid.HipHeight or 2)
     local safeHeight = -2
-    --local alive = head.Transparency
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
     hrp.CFrame = CFrame.new(targetPosition)
@@ -371,6 +352,7 @@ local function check()
     local monsters = workspace.Client.Enemies:GetChildren()
     for _, monster in pairs(monsters) do
         if not isFarm1 and not isFarm2 then break end
+        if inGamemode then break end
         if not monster:FindFirstChild("Head") then return end
         local Head = monster.Head
         if Head.Transparency ~= 0 then continue end
@@ -390,7 +372,7 @@ local function check()
 
         for _, target in ipairs(targetList) do
             if (target == nameText) then
-                warn("he")
+                if inGamemode then break end
                 if isFarm1 then kill(monster) end
                 if isFarm2 then kill2(monster) end
                 break
@@ -400,7 +382,7 @@ local function check()
 end
 task.spawn(function()
     while true do
-        if inDungeon or (isFarm1 == false and isFarm2 == false) or isBoss or isTele == true then 
+        if (isFarm1 == false and isFarm2 == false) or inGamemode or isTele == true then 
             task.wait()
             continue
         end
@@ -417,7 +399,7 @@ local function teleportTo(target)
             if (getPosition(hrp) - Pos).Magnitude  > distance then return end
             
             local targetPosition = Pos        
-            if inDungeon or isBoss then return end 
+            if inGamemode or isTele then return end 
             hrp.CFrame = CFrame.new(targetPosition)
             break
         end
@@ -427,14 +409,13 @@ end
 
 local function autoTeleportFarm()
     while isTeleportFarm do
-        if inDungeon or isBoss or isTele then 
+        if inGamemode or isTele then 
             task.wait()
             continue 
         end
         for _, location in ipairs(locationTargetList) do
             teleportTo(location)
         end
-
         task.wait()
     end
 end
@@ -511,7 +492,7 @@ local function killDungeon(monster)
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
 
-    while isDungeon and isTele == false do
+    while isTrial and isTele == false and inGamemode do
         hrp.CFrame = CFrame.new(targetPosition)
         if not hrp then 
             task.wait()
@@ -526,14 +507,13 @@ local function killDungeon(monster)
     end
 end
 
-local function checkDungeon() 
-    dontTeleport = true
-    while waveDungeon <= targetWaveDungeon and inDungeon and isDungeon and waveRaid <= targetWaveRaid and waveDef <= targetWaveDef and isTele == false do 
+local function checkTrial() 
+    while waveDungeon <= targetWaveDungeon 
+     and waveRaid <= targetWaveRaid 
+     and waveDef <= targetWaveDef 
+     and waveTrial <= targetWaveTrial and
+     isTele == false and inGamemode do 
         local monsters = workspace.Client.Enemies:GetChildren()
-        if #monsters == 0 then 
-            task.wait()
-            continue 
-        end
         for _, monster in pairs(monsters) do
             local Head = monster:FindFirstChild("Head")
             if not Head or Head.Transparency ~= 0 then continue end
@@ -544,22 +524,62 @@ local function checkDungeon()
             local dis = getDistance(hrp, monster)
             if dis >= distance or dis <= attackRange then continue end
             killDungeon(monster)
-            if not isDungeon or isTele then break end
+            if not inGamemode or isTele then break end
             task.wait()
         end
+        if waveTrial >= targetWaveTrial then
+            if (waveTrial > targetWaveTrial) then
+                teleportToMap(teleportBackMap)
+                return
+            else
+                task.wait(2)
+                monsters = workspace.Client.Enemies:GetChildren()
+                if #monsters == 0 then 
+                    teleportToMap(teleportBackMap)
+                    return
+                end
+            end
+        end 
     task.wait()
     end
-    --if isDungeon and waveRaid > targetWaveRaid or waveDef > targetWaveDef then teleportBack() end
-    dontTeleport = false
 end
 
 local function joinDungeon()
-    inDungeon = true
-    checkDungeon()
-    inDungeon = false
+    local isTargetTrial = false
+    currentTime = os.date("*t")
+    for i, trial in pairs(trialList) do
+        if trialList[i].time == currentTime.min or trialList[i].time + 30 == currentTime.min then 
+            isTargetTrial = trial.name
+            break
+        end
+    end
+    if not isTargetTrial then return end
+    inGamemode = true
+    task.wait(1)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local dataRemoteEvent = ReplicatedStorage.BridgeNet2.dataRemoteEvent -- RemoteEvent 
+    dataRemoteEvent:FireServer(
+        {
+            {
+                "Gamemodes",
+                isTargetTrial,
+                "Join",
+                n = 3
+            },
+            "\2"
+        }
+    )
+    task.wait(8)
+    checkTrial()
+    inGamemode = false
 end
 local function autoFarmDungeon()
-    while (isDungeon) do
+    while (isTrial) do
+        if inGamemode then 
+            task.wait()
+            continue
+        end
+        waveTrial = 0
         joinDungeon()
         task.wait(1)    
     end
@@ -659,8 +679,9 @@ end)
     local tabs = {
         Main = Window:AddTab({ Title = "Farm", Icon = "swords" }),
         Farm2 = Window:AddTab({ Title = "Location Farm", Icon = "swords" }),
+        Teleport = Window:AddTab({ Title = "Teleport Pannel", Icon = "swords" }),
         Boss = Window:AddTab({ Title = "Boss", Icon = "swords" }),
-        Dungeon = Window:AddTab({ Title = "Raids", Icon = "skull" }),
+        Trial = Window:AddTab({ Title = "Trial", Icon = "skull" }),
         Power = Window:AddTab({ Title = "Auto Powers", Icon = "flame" }),
         Stronger = Window:AddTab({ Title = "Auto Stronger", Icon = "flame" }),
         Settings = Window:AddTab({ Title = "Player Config", Icon = "user-cog" })
@@ -804,10 +825,10 @@ end)
         toogleLocationHatch:OnChanged(function()
             isTeleportHatch = toogleLocationHatch.Value
         end)
-        -- BBoss
-        local teleportBackBossDropdown = tabs.Boss:AddDropdown("teleportBackBossDropdown", {
+        -- TTeleport
+        local teleportBackMapDropdown = tabs.Teleport:AddDropdown("teleportBackMapDropdown", {
             Title = "Auto Teleport to Map",
-            Description = "After kill boss",
+            Description = "After boss and all Gamemode",
             Values = {},
             Multi = false,
             Default = "None",
@@ -821,11 +842,12 @@ end)
                 table.insert(res, boss.map)
                 nameSet[boss.map] = true
             end
-            teleportBackBossDropdown:SetValues(res)
+            teleportBackMapDropdown:SetValues(res)
         end)
-        teleportBackBossDropdown:OnChanged(function(selectedValues)
-            teleportBackBossMap = selectedValues
+        teleportBackMapDropdown:OnChanged(function(selectedValues)
+            teleportBackMap = selectedValues
         end)
+        -- BBoss
         local sectionBoss = tabs.Boss:AddSection("Turn on before boss spawn!")
         for _, boss in ipairs(bossList) do 
             toogleBoss[boss.name] = tabs.Boss:AddToggle("toggleBoss"..boss.name, {Title = boss.map .. " " .. boss.name, Default = false, Description = "",})
@@ -843,10 +865,49 @@ end)
             end)
             task.wait()
         end
-        --Dungeon
-        local toogleAutoRaid = tabs.Dungeon:AddToggle("toogleAutoRaid", {Title = "Auto Farm Raid", Default = false})
-        toogleAutoRaid:OnChanged(function()
-            isDungeon = toogleAutoRaid.Value
+        --TTrial
+        local trialDropdown = tabs.Trial:AddDropdown("trialDropdown", {
+            Title = "Trial Selection",
+            Description = "Select Trial mode",
+            Values = {},
+            Multi = true,
+            Default = {},
+        })
+        task.spawn(function()
+            local res = {}
+            for _, trial in pairs(trialList) do
+                table.insert(res, trial.name)
+            end
+            trialDropdown:SetValues(res)
+        end)
+        trialDropdown:OnChanged(function(selectedValues)
+            table.clear(targetTrial)
+            for _, trialName in ipairs(selectedValues) do
+                table.insert(targetTrial, trialName)
+            end
+        end)
+
+        local inputTrialTarget = tabs.Trial:AddInput("inputTrialTarget", {
+            Title = "Trial Target Wave",
+            Description = "Leave after done this wave",
+            Default = 500,
+            Placeholder = "Placeholder",
+            Numeric = true, -- Only allows numbers
+            Finished = true, -- Only calls callback when you press enter
+            Callback = function(Value)
+            end
+        })
+        inputTrialTarget:OnChanged(function()
+            if inputTrialTarget.Value == nil or inputTrialTarget.Value == "" then
+                targetWaveTrial = 100 else
+                targetWaveTrial = tonumber(inputTrialTarget.Value)
+            end
+        end)
+
+        local toogleAutoTrial = tabs.Trial:AddToggle("toogleAutoTrial", {Title = "Auto Farm Trial", Default = false})
+        toogleAutoTrial:OnChanged(function()
+            isTrial = toogleAutoTrial.Value
+            task.spawn(function() autoFarmDungeon() end)
         end)
 
 
@@ -904,7 +965,6 @@ end)
         starDropdown:OnChanged(function(selectedValues)
             targetStar = selectedValues
         end)
-
 
         -- Player
         local close = tabs.Settings:AddParagraph({
