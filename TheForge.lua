@@ -1,4 +1,4 @@
-if  true then -- tween 2
+if  true then -- tweenKing
 local Webhook = "https://discord.com/api/webhooks/1443160031775424523/ivqtzsxrV7RRjenuvoLlLTzXJAWL7MmZzRPZdYbNvYqbnc29_dQjy4ZVs-pid4dUJn1F"
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -308,7 +308,8 @@ local function teleportTo(target)
             local Pos = location.pos
             if (getPosition(hrp) - Pos).Magnitude  > distance then return end
             local targetPosition = Pos        
-            hrp.CFrame = CFrame.new(targetPosition, targetPosition + location.dir)
+            tweenTo(targetPosition)
+            hrp.CFrame = CFrame.lookAt(targetPosition,targetPosition + location.dir)
             break
         end
         task.wait()
@@ -318,7 +319,7 @@ end
 local function autoTeleportFarm()
     while isTeleportFarm do
         for _, location in ipairs(locationTargetList) do
-            --teleportTo(location)
+            teleportTo(location)
             task.wait()
         end
         task.wait()
