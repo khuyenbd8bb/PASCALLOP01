@@ -491,6 +491,7 @@ task.spawn(function()
                     "\2"
                 }
             )
+            task.wait(0.5)
         end
         task.wait()
     end
@@ -526,6 +527,7 @@ local function killDungeon(monster)
     local headPos = getPosition(head)
     local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)     
     while isTrial and isTele == false and inGamemode do
+        if waveTrial > targetWaveTrial then return end
         hrp.CFrame = CFrame.new(targetPosition)
         if not hrp then 
             task.wait()
@@ -554,6 +556,7 @@ local function checkTrial(trial)
             if dis >= distance or dis <= attackRange then continue end
             killDungeon(monster)
             if not inGamemode or isTele then break end
+            if waveTrial > targetWaveTrial then return end
             task.wait()
         end
         if spawnPad and spawnPad.Parent and spawnPad.Parent.Name ~= "Trial Lobby" then
