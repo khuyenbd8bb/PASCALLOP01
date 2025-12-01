@@ -9,7 +9,22 @@ local player = Players.LocalPlayer
 local character = player.Character
 local hrp = character:FindFirstChild("HumanoidRootPart")
 local humanoid = character:FindFirstChild("Humanoid")
-
+local spawnPad = nil
+task.spawn(function()
+    while true do
+        if spawnPad and spawnPad.Parent then 
+            task.wait(1)
+            continue
+        end
+        for _, descendant in ipairs(workspace:GetDescendants()) do
+            if descendant.Name == "Spawn" and descendant:IsA("BasePart") and descendant.Parent and descendant.Parent:IsA("Folder") then
+                spawnPad = descendant
+                break
+            end
+        end
+        task.wait()
+    end
+end)
 --MMain
 local HatchGui = game:GetService("Players").LocalPlayer.PlayerGui
 local attackRangePart 
@@ -28,7 +43,7 @@ local isTeleportFarm = false
 --Boss
 local toogleBoss = {}; local bossList = {};
 -- DDungeon, Raid, Trial
-local trialGui = game:GetService("StarterGui").Interface.HUD.Gamemodes.TrialEasy.Background.Wave
+local trialGui = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Gamemodes.TrialEasy.Background.Wave
 local waveRaid = 0;local waveDungeon = 0; local waveDef = 0; local waveTrial = 0;
 local targetWaveRaid = 500; local targetWaveDef = 500; 
 local targetWaveDungeon = 500; local targetWaveTrial = 500;
@@ -50,8 +65,10 @@ local isRankUp = false
 local currentTime = os.date("*t") -- Use os.date() not os.time()
 local isAutoAttack = false
 --WWaveGui
+
 trialGui:GetPropertyChangedSignal("Text"):Connect(function()
     waveTrial = tonumber((string.gsub(trialGui.Text, "Wave ", "")))
+    warn(waveTrial)
 end)
 --table
 table.insert(powerList, {name = "Hero Rank", auto = false})
@@ -74,6 +91,23 @@ bossList = {
 trialList = {
     {name = "TrialEasy", time = 15}
 }
+-- Anti rejoin/ AFK
+local GC = getconnections or get_signal_cons
+if GC then
+    for i,v in pairs(GC(Players.LocalPlayer.Idled)) do
+        if v["Disable"] then
+            v["Disable"](v)
+        elseif v["Disconnect"] then
+            v["Disconnect"](v)
+        end
+    end
+else
+    Players.LocalPlayer.Idled:Connect(function()
+        local VirtualUser = game:GetService("VirtualUser")
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
+end
 -- Main
 task.spawn(function()
     local ok = true
@@ -82,7 +116,6 @@ task.spawn(function()
         writefile("TigerHubAA/monsterList.json", "[]") -- Changed from {} to [] for array
         ok = false
     end
-    
     if not isfolder("TigerHubAA") or not isfile("TigerHubAA/locationList.json") then
         makefolder("TigerHubAA")
         writefile("TigerHubAA/locationList.json", "[]") -- Changed from {} to [] for array
@@ -228,6 +261,7 @@ local function teleportToMap(map)
             "\2"
         }
     )
+    warn("TELE")
     task.wait(5)
     isTele = false
 end
@@ -490,24 +524,19 @@ local function killDungeon(monster)
     local safeHeight = -2
     --local alive = head.Transparency
     local headPos = getPosition(head)
-    local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)        
-
+    local targetPosition = headPos + Vector3.new(5, hrpToFeet + safeHeight, 5)     
     while isTrial and isTele == false and inGamemode do
         hrp.CFrame = CFrame.new(targetPosition)
         if not hrp then 
             task.wait()
             continue
         end
-        if not head then break end
-        if head.Transparency ~= 0 then break end
-        if getDistance(hrp, monster) > distance then 
-            return
-        end
+        if not head or head.Transparency ~= 0 or getDistance(hrp, monster) > distance then return end
         task.wait()
     end
 end
 
-local function checkTrial() 
+local function checkTrial(trial) 
     while waveDungeon <= targetWaveDungeon 
      and waveRaid <= targetWaveRaid 
      and waveDef <= targetWaveDef 
@@ -527,23 +556,15 @@ local function checkTrial()
             if not inGamemode or isTele then break end
             task.wait()
         end
-        if waveTrial >= targetWaveTrial then
-            if (waveTrial > targetWaveTrial) then
-                teleportToMap(teleportBackMap)
-                return
-            else
-                task.wait(2)
-                monsters = workspace.Client.Enemies:GetChildren()
-                if #monsters == 0 then 
-                    teleportToMap(teleportBackMap)
-                    return
-                end
-            end
-        end 
+        if spawnPad and spawnPad.Parent and spawnPad.Parent.Name ~= "Trial Lobby" then
+            return
+        end
+        if spawnPad and spawnPad.Parent and getDistance(hrp, spawnPad) <= 10 then
+            return
+        end
     task.wait()
     end
 end
-
 local function joinDungeon()
     local isTargetTrial = false
     currentTime = os.date("*t")
@@ -552,6 +573,15 @@ local function joinDungeon()
             isTargetTrial = trial.name
             break
         end
+    end
+    if spawnPad and spawnPad.Parent and spawnPad.Parent.Name == "Trial Lobby" then
+        inGamemode = true
+        task.wait(1)
+        checkTrial(isTargetTrial)
+        task.wait(3)
+        teleportToMap(teleportBackMap)
+        inGamemode = false
+        return
     end
     if not isTargetTrial then return end
     inGamemode = true
@@ -569,8 +599,10 @@ local function joinDungeon()
             "\2"
         }
     )
-    task.wait(8)
-    checkTrial()
+    task.wait(4)
+    checkTrial(isTargetTrial)
+    task.wait(3)
+    teleportToMap(teleportBackMap)
     inGamemode = false
 end
 local function autoFarmDungeon()
@@ -660,7 +692,7 @@ end)
 -- GGUI
     
     local Window = Fluent:CreateWindow({
-        Title = "Tiger HUB | Anime Advance Simulator | Version: 1 | Functions",
+        Title = "Tiger HUB | Anime Advance Simulator | Version: 3 | Trial",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -821,10 +853,6 @@ end)
             end
         })
 
-        local toogleLocationHatch = tabs.Farm2:AddToggle("toogleLocationHatch", {Title = "Location Gacha", Default = false, Description = "Req(Auto Gacha + Location farm)",})
-        toogleLocationHatch:OnChanged(function()
-            isTeleportHatch = toogleLocationHatch.Value
-        end)
         -- TTeleport
         local teleportBackMapDropdown = tabs.Teleport:AddDropdown("teleportBackMapDropdown", {
             Title = "Auto Teleport to Map",
@@ -1006,40 +1034,19 @@ end)
         CopyScriptPath.TextSize = 16
         CopyScriptPath.BorderSizePixel = 2
         CopyScriptPath.BorderColor3 = Color3.new(1.000000, 1.000000, 1.000000)
-
         CopyScriptPath.MouseButton1Click:Connect(function()
             Window:Minimize()
         end)
-
         SaveManager:SetLibrary(Fluent)
         InterfaceManager:SetLibrary(Fluent)
-
-        -- Ignore keys that are used by ThemeManager.
-        -- (we dont want configs to save themes, do we?)
         SaveManager:IgnoreThemeSettings()
-
-        -- You can add indexes of elements the save manager should ignore
         SaveManager:SetIgnoreIndexes({})
-
-        -- use case for doing it this way:
-        -- a script hub could have themes in a global folder
-        -- and game configs in a separate folder per game
-        InterfaceManager:SetFolder("TigerHubConfig") 
+        InterfaceManager:SetFolder("TigerHubConfig")
         SaveManager:SetFolder("TigerHubConfig/AnimeAdvance")
-
         InterfaceManager:BuildInterfaceSection(tabs.Settings)
         SaveManager:BuildConfigSection(tabs.Settings)
-
-
         Window:SelectTab(1)
-
-        -- You can use the SaveManager:LoadAutoloadConfig() to load a config
-        -- which has been marked to be one that auto loads!
         SaveManager:LoadAutoloadConfig()
         tabs.Settings:AddSection("Only work with lastest config")
     end
 end
-
-
-
---part.CanCollide = false -- Players can walk through
