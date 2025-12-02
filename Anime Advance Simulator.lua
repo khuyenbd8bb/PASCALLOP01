@@ -1,4 +1,4 @@
-if game.PlaceId == 105716258039711 then -- 1
+if game.PlaceId == 105716258039711 then
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
@@ -27,12 +27,11 @@ task.spawn(function()
 end)
 --MMain
 local HatchGui = game:GetService("Players").LocalPlayer.PlayerGui
-local attackRangePart 
 local distance = 10000
 local farm2Delay = 0.1
 local dontTeleport
 local gachaZone
-local attackRange 
+local attackRange = 5
 local inGamemode
 -- FFarm
 local monsterList = {};local nameList = {};local targetList = {}
@@ -159,12 +158,13 @@ end)
 
 task.spawn(function()
     while true do
-        attackRangePart =  workspace.Cache:FindFirstChild("Area")
+        
+        local attackRangePart =  workspace.Cache:FindFirstChild("Area")
         if not attackRangePart  then 
             task.wait(1)
             continue
         end
-        attackRange = attackRangePart.Size.X/2
+        attackRange = attackRangePart.Size.X/2-5
         task.wait(1)
     end
 end)
@@ -262,7 +262,7 @@ local function teleportToMap(map)
         }
     )
     warn("TELE")
-    task.wait(5)
+    task.wait(6)
     isTele = false
 end
 local function killBoss(boss, index)
